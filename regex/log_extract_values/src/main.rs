@@ -31,7 +31,7 @@ fn main() -> Result<(), Box<dyn Error>> {
           \s-\s
           (.+)                                 # Remote user
           \s\[
-          (.*)                                 # Time local
+          (.+)                                 # Time local
           \]
           .*
           "#,
