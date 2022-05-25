@@ -11,7 +11,11 @@ struct Log<'a> {
 
 impl<'a> fmt::Display for Log<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{},{},{}", self.remote_addr, self.remote_user, self.time_local)
+        write!(
+            f,
+            "{},{},{}",
+            self.remote_addr, self.remote_user, self.time_local
+        )
     }
 }
 
@@ -55,4 +59,3 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
-
