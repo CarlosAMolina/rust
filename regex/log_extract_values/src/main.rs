@@ -1,5 +1,6 @@
 use std::error::Error;
 
+use lazy_static::lazy_static;
 use regex::Regex;
 use std::fmt;
 
@@ -37,7 +38,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     8.8.8.8 - - [28/Oct/2021:00:18:22 +0100] "GET / HTTP/1.1" 200 77 "-" "foo bar 1"
     150.10.100.23 - foo_user [10/Oct/2022:05:18:22 +0100] "GET / HTTP/1.1" 300 51 "-" "foo bar 2""#;
 
-    let re = Regex::new(
+    lazy_static! {
+        static ref RE: Regex = Regex::new(
         r#"(?x)
           (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}) # IPv4
           \s-\s
@@ -53,13 +55,12 @@ fn main() -> Result<(), Box<dyn Error>> {
           \s"
           (.+)                                 # HTTP referer
           "\s"
-          (.*)                                 # HTTP user agent
+          (.+)                                 # HTTP user agent
           "
-
         "#,
-    )?;
-
-    let logs = re.captures_iter(text).filter_map(|cap| {
+        ).unwrap();
+    }
+    let logs = RE.captures_iter(text).filter_map(|cap| {
         let groups = (
             cap.get(1),
             cap.get(2),
