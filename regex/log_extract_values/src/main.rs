@@ -37,10 +37,23 @@ fn main() -> Result<(), Box<dyn Error>> {
     1.1.1.1 foo
     8.8.8.8 - - [28/Oct/2021:00:18:22 +0100] "GET / HTTP/1.1" 200 77 "-" "foo bar 1"
     150.10.100.23 - foo_user [10/Oct/2022:05:18:22 +0100] "GET / HTTP/1.1" 300 51 "-" "foo bar 2""#;
+    let logs = get_logs(text);
 
+    assert_eq!(
+        vec![
+            "8.8.8.8,-,28/Oct/2021:00:18:22 +0100,GET / HTTP/1.1,200,77,-,foo bar 1",
+            "150.10.100.23,foo_user,10/Oct/2022:05:18:22 +0100,GET / HTTP/1.1,300,51,-,foo bar 2",
+        ],
+        logs.map(|m| m.to_string()).collect::<Vec<_>>(),
+    );
+
+    Ok(())
+}
+
+fn get_logs(text: &str) -> impl Iterator<Item = Log> {
     lazy_static! {
         static ref RE: Regex = Regex::new(
-        r#"(?x)
+            r#"(?x)
           (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}) # IPv4
           \s-\s
           (.+)                                 # Remote user
@@ -58,9 +71,10 @@ fn main() -> Result<(), Box<dyn Error>> {
           (.+)                                 # HTTP user agent
           "
         "#,
-        ).unwrap();
+        )
+        .unwrap();
     }
-    let logs = RE.captures_iter(text).filter_map(|cap| {
+    RE.captures_iter(text).filter_map(|cap| {
         let groups = (
             cap.get(1),
             cap.get(2),
@@ -93,15 +107,5 @@ fn main() -> Result<(), Box<dyn Error>> {
             }),
             _ => None,
         }
-    });
-
-    assert_eq!(
-        vec![
-            "8.8.8.8,-,28/Oct/2021:00:18:22 +0100,GET / HTTP/1.1,200,77,-,foo bar 1",
-            "150.10.100.23,foo_user,10/Oct/2022:05:18:22 +0100,GET / HTTP/1.1,300,51,-,foo bar 2",
-        ],
-        logs.map(|m| m.to_string()).collect::<Vec<_>>(),
-    );
-
-    Ok(())
+    })
 }
