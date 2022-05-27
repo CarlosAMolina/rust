@@ -35,20 +35,6 @@ impl<'a> fmt::Display for Log<'a> {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string("application.log").expect("Something went wrong reading the file");
-    let logs = get_logs(&contents);
-
-    assert_eq!(
-        vec![
-            "8.8.8.8,-,28/Oct/2021:00:18:22 +0100,GET / HTTP/1.1,200,77,-,foo bar 1",
-            "150.10.100.23,foo_user,10/Oct/2022:05:18:22 +0100,GET / HTTP/1.1,300,51,-,foo bar 2",
-        ],
-        logs.map(|m| m.to_string()).collect::<Vec<_>>(),
-    );
-
-    Ok(())
-}
-
-fn get_logs(text: &str) -> impl Iterator<Item = Log> {
     lazy_static! {
         static ref RE: Regex = Regex::new(
             r#"(?x)
@@ -72,7 +58,39 @@ fn get_logs(text: &str) -> impl Iterator<Item = Log> {
         )
         .unwrap();
     }
-    RE.captures_iter(text).filter_map(|cap| {
+
+    show_not_parsed_logs(&contents, &RE);
+    let logs = get_logs(&contents, &RE);
+
+    assert_eq!(
+        vec![
+            "8.8.8.8,-,28/Oct/2021:00:18:22 +0100,GET / HTTP/1.1,200,77,-,foo bar 1",
+            "150.10.100.23,foo_user,10/Oct/2022:05:18:22 +0100,GET / HTTP/1.1,300,51,-,foo bar 2",
+        ],
+        logs.map(|m| m.to_string()).collect::<Vec<_>>(),
+    );
+
+    Ok(())
+}
+
+fn show_not_parsed_logs(text: &str, re: &Regex) {
+    let logs_not_parsed = text
+        .lines()
+        .filter(|line| !re.is_match(line))
+        .map(|m| m.to_string()).collect::<Vec<_>>();
+
+    if !logs_not_parsed.is_empty() {
+           eprintln!("Not parsed logs ({}):", logs_not_parsed.len());
+           for log in logs_not_parsed {
+               eprintln!("{}", log);
+           }
+    }
+
+}
+
+
+fn get_logs<'a>(text: &'a str, re: &'a Regex) -> impl Iterator<Item = Log<'a>> {
+    re.captures_iter(text).filter_map(|cap| {
         let groups = (
             cap.get(1),
             cap.get(2),
