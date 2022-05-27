@@ -3,6 +3,7 @@ use std::error::Error;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::fmt;
+use std::fs;
 
 struct Log<'a> {
     remote_addr: &'a str,
@@ -33,11 +34,8 @@ impl<'a> fmt::Display for Log<'a> {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let text = r#"
-    1.1.1.1 foo
-    8.8.8.8 - - [28/Oct/2021:00:18:22 +0100] "GET / HTTP/1.1" 200 77 "-" "foo bar 1"
-    150.10.100.23 - foo_user [10/Oct/2022:05:18:22 +0100] "GET / HTTP/1.1" 300 51 "-" "foo bar 2""#;
-    let logs = get_logs(text);
+    let contents = fs::read_to_string("application.log").expect("Something went wrong reading the file");
+    let logs = get_logs(&contents);
 
     assert_eq!(
         vec![
