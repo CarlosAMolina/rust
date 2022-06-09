@@ -1,3 +1,4 @@
 target/
 /csv/write-to-csv-comma/foo.csv
+*.swp
 
