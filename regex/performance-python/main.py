@@ -91,7 +91,7 @@ def run():
             ' (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"'
         )
         result = get_log(log)
-        print(result)
+        #print(result)
     end = timer()
     duration = end - start
     #print(f"Time elapsed: {duration}s")

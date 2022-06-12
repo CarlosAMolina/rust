@@ -8,7 +8,7 @@ fn main() {
     let log =
         r#"8.8.8.8 - - [28/Oct/2021:00:18:22 +0100] "GET / HTTP/1.1" 200 77 "-" "foo bar 1""#;
     let loops_number = 5_000;
-    let loops_number = 1;
+    //let loops_number = 1;
     let start = Instant::now();
     for _ in 0..loops_number {
         let _result = get_regex_result_with_match(&log);
@@ -17,7 +17,7 @@ fn main() {
     let start = Instant::now();
     for _ in 0..loops_number {
         let result = get_regex_result_with_find(&log);
-        println!("{:?}", result);
+        //println!("{:?}", result);
     }
     let duration_find = start.elapsed();
     let start = Instant::now();
