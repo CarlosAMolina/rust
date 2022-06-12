@@ -6,7 +6,7 @@ use regex::Regex;
 
 fn main() {
     let log =
-        "8.8.8.8 - - [28/Oct/2021:00:18:22 +0100] \"GET / HTTP/1.1\" 200 77 \"-\" \"foo bar 1\"";
+        r#"8.8.8.8 - - [28/Oct/2021:00:18:22 +0100] "GET / HTTP/1.1" 200 77 "-" "foo bar 1""#;
     let loops_number = 5_000;
     let loops_number = 1;
     let start = Instant::now();
@@ -116,17 +116,40 @@ fn get_regex_result_with_find(text: &str) -> Option<Log> {
     lazy_static! {
         static ref RE_TIME_LOCAL: Regex = Regex::new(r"\[.+\]",).unwrap();
     }
-
     let time_local = RE_TIME_LOCAL.find(text).unwrap();
+    lazy_static! {
+        static ref RE_REQUEST: Regex = Regex::new(r#".*"\s\d"#).unwrap();
+    }
+    let request = RE_REQUEST.find(&text[time_local.end()..]).unwrap();
+    lazy_static! {
+        static ref RE_STATUS: Regex = Regex::new(r"\d{1,3}").unwrap();
+    }
+    // TODO fix regexs. incorrect text start
+    let status = RE_STATUS.find(&text[request.end()..]).unwrap();
+    // TODO fix regex to get correct value
+    lazy_static! {
+        static ref RE_BODY_BYTES_SENT: Regex = Regex::new(r#"\s\d{1,3}\s\d+"#).unwrap();
+    }
+    let body_bytes_sent = RE_BODY_BYTES_SENT.find(&text).unwrap();
+    lazy_static! {
+        static ref RE_HTTP_REFERER: Regex = Regex::new(r#"\d\s".*"\s"#).unwrap();
+    }
+    let http_referer = RE_HTTP_REFERER.find(&text).unwrap();
+    lazy_static! {
+        static ref RE_HTTP_USER_AGENT: Regex = Regex::new(r#""\s".*$"#).unwrap();
+    }
+    let http_user_agent = RE_HTTP_USER_AGENT.find(&text).unwrap();
+
+
     Some(Log {
         remote_addr: remote_addr.as_str(),
         remote_user: &remote_user.as_str()[..remote_user.as_str().len() - 2],
         time_local: &text[time_local.start()+1..time_local.end() -1],
-        request: "request",
-        status: "status",
-        body_bytes_sent: "body_bytes_sent",
-        http_referer: "http_referer",
-        http_user_agent: "http_user_agent",
+        request: &request.as_str()[2..request.as_str().len()-3],
+        status: &status.as_str(), 
+        body_bytes_sent: &body_bytes_sent.as_str(),
+        http_referer: &http_referer.as_str()[3..http_referer.as_str().len()-2],
+        http_user_agent: &http_user_agent.as_str()[3..http_user_agent.as_str().len()-1],
     })
 }
 
