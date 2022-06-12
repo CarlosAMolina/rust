@@ -84,7 +84,7 @@ def get_log(line: str) -> Optional[Log]:
 
 def run():
     start = timer()
-    for i in range(5000):
+    for i in range(5_000):
         log = (
             '8.8.8.8 - abc [28/Nov/2021:00:18:22 +0100] "GET / HTTP/1.1" 200 77 "-"'
             ' "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36'
