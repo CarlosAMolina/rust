@@ -102,54 +102,60 @@ fn get_regex_result_with_match(text: &str) -> Option<Log> {
 }
 
 fn get_regex_result_with_find(text: &str) -> Option<Log> {
+    let mut characters_checked = 0;
     lazy_static! {
         static ref RE_IPV4: Regex = Regex::new(r"(\d{1,3}[\.]){3}\d{1,3}",).unwrap();
     }
-
     let remote_addr = RE_IPV4.find(text).unwrap();
+    characters_checked += remote_addr.end();
+    characters_checked += 3;
 
     lazy_static! {
-        static ref RE_REMOTE_USER: Regex = Regex::new(r"(.+)\s\[").unwrap();
+        static ref RE_REMOTE_USER: Regex = Regex::new(r".+\s\[").unwrap();
     }
-    //println!("{:?}", &text[remote_addr.start()..remote_addr.end()]);
-    let remote_user = RE_REMOTE_USER.find(&text[remote_addr.end() + 3..]).unwrap();
+    let remote_user = RE_REMOTE_USER.find(&text[characters_checked..]).unwrap();
+    characters_checked += remote_user.end();
     lazy_static! {
-        static ref RE_TIME_LOCAL: Regex = Regex::new(r"\[.+\]",).unwrap();
+        static ref RE_TIME_LOCAL: Regex = Regex::new(r"\d{2}/[[:alpha:]]{3}/\d{4}:\d{2}:\d{2}:\d{2}\s\+\d{4}",).unwrap();
     }
-    let time_local = RE_TIME_LOCAL.find(text).unwrap();
+    let time_local = RE_TIME_LOCAL.find(&text[characters_checked..]).unwrap();
+    characters_checked += time_local.end();
+    characters_checked += 3;
     lazy_static! {
-        static ref RE_REQUEST: Regex = Regex::new(r#".*"\s\d"#).unwrap();
+        static ref RE_REQUEST: Regex = Regex::new(r#"[[:alpha:]].*"\s\d"#).unwrap();
     }
-    let request = RE_REQUEST.find(&text[time_local.end()..]).unwrap();
+    let request = RE_REQUEST.find(&text[characters_checked..]).unwrap();
+    characters_checked += request.end() - 1;
     lazy_static! {
-        static ref RE_STATUS: Regex = Regex::new(r"\d{1,3}").unwrap();
+        static ref RE_STATUS: Regex = Regex::new(r"\d{3}").unwrap();
     }
-    // TODO fix regexs. incorrect text start
-    let status = RE_STATUS.find(&text[request.end()..]).unwrap();
-    // TODO fix regex to get correct value
+    let status = RE_STATUS.find(&text[characters_checked..]).unwrap();
+    characters_checked += status.end();
     lazy_static! {
-        static ref RE_BODY_BYTES_SENT: Regex = Regex::new(r#"\s\d{1,3}\s\d+"#).unwrap();
+        static ref RE_BODY_BYTES_SENT: Regex = Regex::new(r"\d{1,3}").unwrap();
     }
-    let body_bytes_sent = RE_BODY_BYTES_SENT.find(&text).unwrap();
+    let body_bytes_sent = RE_BODY_BYTES_SENT.find(&text[characters_checked..]).unwrap();
+    characters_checked += body_bytes_sent.end();
+    characters_checked += 2;
     lazy_static! {
-        static ref RE_HTTP_REFERER: Regex = Regex::new(r#"\d\s".*"\s"#).unwrap();
+        static ref RE_HTTP_REFERER: Regex = Regex::new(r#".*"\s"#).unwrap();
     }
-    let http_referer = RE_HTTP_REFERER.find(&text).unwrap();
+    let http_referer = RE_HTTP_REFERER.find(&text[characters_checked..]).unwrap();
+    characters_checked += http_referer.end();
+    characters_checked += 1;
     lazy_static! {
-        static ref RE_HTTP_USER_AGENT: Regex = Regex::new(r#""\s".*$"#).unwrap();
+        static ref RE_HTTP_USER_AGENT: Regex = Regex::new(r#".*"$"#).unwrap();
     }
-    let http_user_agent = RE_HTTP_USER_AGENT.find(&text).unwrap();
-
-
+    let http_user_agent = RE_HTTP_USER_AGENT.find(&text[characters_checked..]).unwrap();
     Some(Log {
         remote_addr: remote_addr.as_str(),
         remote_user: &remote_user.as_str()[..remote_user.as_str().len() - 2],
-        time_local: &text[time_local.start()+1..time_local.end() -1],
-        request: &request.as_str()[2..request.as_str().len()-3],
-        status: &status.as_str(), 
-        body_bytes_sent: &body_bytes_sent.as_str(),
-        http_referer: &http_referer.as_str()[3..http_referer.as_str().len()-2],
-        http_user_agent: &http_user_agent.as_str()[3..http_user_agent.as_str().len()-1],
+        time_local: time_local.as_str(),
+        request: &request.as_str()[..request.as_str().len()-3],
+        status: status.as_str(), 
+        body_bytes_sent: body_bytes_sent.as_str(),
+        http_referer: &http_referer.as_str()[..http_referer.as_str().len()-2],
+        http_user_agent: &http_user_agent.as_str()[..http_user_agent.as_str().len()-1],
     })
 }
 
