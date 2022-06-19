@@ -7,8 +7,7 @@ use regex::Regex;
 //TODO check parse log with remote user different than -
 
 fn main() {
-    let log =
-        r#"8.8.8.8 - - [28/Oct/2021:00:18:22 +0100] "GET / HTTP/1.1" 200 77 "-" "foo bar 1""#;
+    let log = r#"8.8.8.8 - - [28/Oct/2021:00:18:22 +0100] "GET / HTTP/1.1" 200 77 "-" "foo bar 1""#;
     println!("Parsing log: {:?}", log);
     let loops_number = 5_000;
     let loops_number = 1;
@@ -127,9 +126,10 @@ fn get_regex_result_with_find(text: &str) -> Option<Log> {
     }
     re_result = RE_REMOTE_USER.find(&text[characters_checked..]).unwrap();
     characters_checked += re_result.end();
-    log_parts_index.push(characters_checked-2);
+    log_parts_index.push(characters_checked - 2);
     lazy_static! {
-        static ref RE_TIME_LOCAL: Regex = Regex::new(r"\d{2}/[[:alpha:]]{3}/\d{4}:\d{2}:\d{2}:\d{2}\s\+\d{4}",).unwrap();
+        static ref RE_TIME_LOCAL: Regex =
+            Regex::new(r"\d{2}/[[:alpha:]]{3}/\d{4}:\d{2}:\d{2}:\d{2}\s\+\d{4}",).unwrap();
     }
     log_parts_index.push(characters_checked);
     re_result = RE_TIME_LOCAL.find(&text[characters_checked..]).unwrap();
@@ -155,7 +155,9 @@ fn get_regex_result_with_find(text: &str) -> Option<Log> {
     lazy_static! {
         static ref RE_BODY_BYTES_SENT: Regex = Regex::new(r"\d{1,3}").unwrap();
     }
-    let body_bytes_sent = RE_BODY_BYTES_SENT.find(&text[characters_checked..]).unwrap();
+    let body_bytes_sent = RE_BODY_BYTES_SENT
+        .find(&text[characters_checked..])
+        .unwrap();
     characters_checked += body_bytes_sent.end();
     log_parts_index.push(characters_checked);
     characters_checked += 2;
@@ -172,13 +174,13 @@ fn get_regex_result_with_find(text: &str) -> Option<Log> {
     //}
     //let http_user_agent = RE_HTTP_USER_AGENT.find(&text[characters_checked..]).unwrap();
     log_parts_index.push(characters_checked);
-    log_parts_index.push(text.len()-1);
+    log_parts_index.push(text.len() - 1);
     Some(Log {
         remote_addr: &text[log_parts_index[0]..log_parts_index[1]],
         remote_user: &text[log_parts_index[2]..log_parts_index[3]],
         time_local: &text[log_parts_index[4]..log_parts_index[5]],
         request: &text[log_parts_index[6]..log_parts_index[7]],
-        status: &text[log_parts_index[8]..log_parts_index[9]], 
+        status: &text[log_parts_index[8]..log_parts_index[9]],
         body_bytes_sent: &text[log_parts_index[10]..log_parts_index[11]],
         http_referer: &text[log_parts_index[12]..log_parts_index[13]],
         http_user_agent: &text[log_parts_index[14]..log_parts_index[15]],
@@ -248,9 +250,9 @@ fn get_regex_result_with_groups(text: &str) -> Option<Log> {
 }
 
 fn get_match_len(bytes: &[u8], byte_to_match: u8) -> usize {
-    for (i, &item) in bytes.iter().enumerate(){
+    for (i, &item) in bytes.iter().enumerate() {
         if item == byte_to_match {
-            return i
+            return i;
         }
     }
     bytes.len()
@@ -263,25 +265,44 @@ fn get_regex_result_without_regex(text: &str) -> Option<Log> {
     log_parts_index.push(get_match_len(&bytes, b' '));
     // remote_user
     log_parts_index.push(log_parts_index[log_parts_index.len() - 1] + 3);
-    log_parts_index.push(log_parts_index[log_parts_index.len() - 1] + get_match_len(&bytes[log_parts_index[log_parts_index.len() -1]..], b'[') - 1);
-    // time_local 
+    log_parts_index.push(
+        log_parts_index[log_parts_index.len() - 1]
+            + get_match_len(&bytes[log_parts_index[log_parts_index.len() - 1]..], b'[')
+            - 1,
+    );
+    // time_local
     log_parts_index.push(log_parts_index[log_parts_index.len() - 1] + 2);
-    log_parts_index.push(log_parts_index[log_parts_index.len() -1] + get_match_len(&bytes[log_parts_index[log_parts_index.len() -1]..], b']'));
-    // request 
-    log_parts_index.push(log_parts_index[log_parts_index.len() -1] + 3);
-    log_parts_index.push(log_parts_index[log_parts_index.len() -1] + get_match_len(&bytes[log_parts_index[log_parts_index.len() -1]..], b'"'));
-    // status 
-    log_parts_index.push(log_parts_index[log_parts_index.len() -1] + 2);
-    log_parts_index.push(log_parts_index[log_parts_index.len() -1] + get_match_len(&bytes[log_parts_index[log_parts_index.len() -1]..], b' '));
-    // body_bytes_sent 
-    log_parts_index.push(log_parts_index[log_parts_index.len() -1] + 1);
-    log_parts_index.push(log_parts_index[log_parts_index.len() -1] + get_match_len(&bytes[log_parts_index[log_parts_index.len() -1]..], b' '));
+    log_parts_index.push(
+        log_parts_index[log_parts_index.len() - 1]
+            + get_match_len(&bytes[log_parts_index[log_parts_index.len() - 1]..], b']'),
+    );
+    // request
+    log_parts_index.push(log_parts_index[log_parts_index.len() - 1] + 3);
+    log_parts_index.push(
+        log_parts_index[log_parts_index.len() - 1]
+            + get_match_len(&bytes[log_parts_index[log_parts_index.len() - 1]..], b'"'),
+    );
+    // status
+    log_parts_index.push(log_parts_index[log_parts_index.len() - 1] + 2);
+    log_parts_index.push(
+        log_parts_index[log_parts_index.len() - 1]
+            + get_match_len(&bytes[log_parts_index[log_parts_index.len() - 1]..], b' '),
+    );
+    // body_bytes_sent
+    log_parts_index.push(log_parts_index[log_parts_index.len() - 1] + 1);
+    log_parts_index.push(
+        log_parts_index[log_parts_index.len() - 1]
+            + get_match_len(&bytes[log_parts_index[log_parts_index.len() - 1]..], b' '),
+    );
     // http_referer
-    log_parts_index.push(log_parts_index[log_parts_index.len() -1] + 2);
-    log_parts_index.push(log_parts_index[log_parts_index.len() -1] + get_match_len(&bytes[log_parts_index[log_parts_index.len() -1]..], b'"'));
+    log_parts_index.push(log_parts_index[log_parts_index.len() - 1] + 2);
+    log_parts_index.push(
+        log_parts_index[log_parts_index.len() - 1]
+            + get_match_len(&bytes[log_parts_index[log_parts_index.len() - 1]..], b'"'),
+    );
     // http_user_agent
-    log_parts_index.push(log_parts_index[log_parts_index.len() -1] + 3);
-    log_parts_index.push(text.len() -1);
+    log_parts_index.push(log_parts_index[log_parts_index.len() - 1] + 3);
+    log_parts_index.push(text.len() - 1);
     //println!("{:?} {:?}", &log_parts_index, &characters_checked);
 
     //let log_parts_index = vec![0, 7, 10, 11, 13, 39, 42, 56, 58, 61, 62, 64, 66, 67, 70, 79];
@@ -290,7 +311,7 @@ fn get_regex_result_without_regex(text: &str) -> Option<Log> {
         remote_user: &text[log_parts_index[2]..log_parts_index[3]],
         time_local: &text[log_parts_index[4]..log_parts_index[5]],
         request: &text[log_parts_index[6]..log_parts_index[7]],
-        status: &text[log_parts_index[8]..log_parts_index[9]], 
+        status: &text[log_parts_index[8]..log_parts_index[9]],
         body_bytes_sent: &text[log_parts_index[10]..log_parts_index[11]],
         http_referer: &text[log_parts_index[12]..log_parts_index[13]],
         http_user_agent: &text[log_parts_index[14]..log_parts_index[15]],
