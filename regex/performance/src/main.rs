@@ -4,11 +4,14 @@ use std::time::Instant;
 use lazy_static::lazy_static;
 use regex::Regex;
 
+//TODO check parse log with remote user different than -
+
 fn main() {
     let log =
         r#"8.8.8.8 - - [28/Oct/2021:00:18:22 +0100] "GET / HTTP/1.1" 200 77 "-" "foo bar 1""#;
-    let loops_number = 5_000;
-    //let loops_number = 1;
+    println!("Parsing log: {:?}", log);
+    //let loops_number = 5_000;
+    let loops_number = 1;
     let start = Instant::now();
     for _ in 0..loops_number {
         let _result = get_regex_result_with_match(&log);
@@ -16,19 +19,26 @@ fn main() {
     let duration_match = start.elapsed();
     let start = Instant::now();
     for _ in 0..loops_number {
-        let result = get_regex_result_with_find(&log);
+        let _result = get_regex_result_with_find(&log);
         //println!("{:?}", result);
     }
     let duration_find = start.elapsed();
     let start = Instant::now();
     for _ in 0..loops_number {
-        let result = get_regex_result_with_groups(&log);
+        let _result = get_regex_result_with_groups(&log);
         //println!("{:?}", result);
     }
     let duration_groups = start.elapsed();
+    let start = Instant::now();
+    for _ in 0..loops_number {
+        let result = get_regex_result_without_regex(&log);
+        println!("{:?}", result);
+    }
+    let duration_without_regex = start.elapsed();
     println!("Time elapsed macth: {:?}", duration_match);
     println!("Time elapsed find: {:?}", duration_find);
     println!("Time elapsed groups: {:?}", duration_groups);
+    println!("Time elapsed without regex: {:?}", duration_without_regex);
 }
 
 #[derive(Debug, PartialEq)]
@@ -234,5 +244,65 @@ fn get_regex_result_with_groups(text: &str) -> Option<Log> {
             }),
             _ => None,
         }
+    })
+}
+
+fn get_match_len(bytes: &[u8], byte_to_match: u8) -> usize {
+    for (i, &item) in bytes.iter().enumerate(){
+        if item == byte_to_match {
+            return i
+        }
+    }
+    bytes.len()
+}
+
+fn get_regex_result_without_regex(text: &str) -> Option<Log> {
+    let mut characters_checked = 0;
+    let mut log_parts_index = vec![0];
+    let bytes = text.as_bytes();
+    log_parts_index.push(get_match_len(&bytes, b' '));
+    characters_checked += log_parts_index[log_parts_index.len() -1];
+    characters_checked += 3;
+    println!("To parse: {:?}", &text[characters_checked..]);
+    log_parts_index.push(characters_checked);
+    log_parts_index.push(characters_checked + get_match_len(&bytes[characters_checked..], b'[') - 1);
+    characters_checked += log_parts_index[log_parts_index.len() -1];
+    println!("To parse: {:?}", &text[characters_checked..]);
+    characters_checked += 3;
+    log_parts_index.push(characters_checked);
+
+    log_parts_index.push(characters_checked + get_match_len(&bytes[characters_checked..], b']'));
+    characters_checked += log_parts_index[log_parts_index.len() -1];
+    println!("{:?}", &log_parts_index);
+    //characters_checked += 4;
+    //log_parts_index.push(characters_checked + get_match_len(&bytes[characters_checked..], b'"'));
+
+    let t_len = text.len();
+    let mut vec2 = vec![
+    t_len-14,
+    t_len-13,
+    t_len-12,
+    t_len-11,
+    t_len-10,
+    t_len-9,
+    t_len-8,
+    t_len-7,
+    t_len-6,
+    t_len-5,
+    t_len-4,
+    t_len-3,
+    t_len-2,
+    t_len-1,
+    t_len];
+    log_parts_index.append(&mut vec2);
+    Some(Log {
+        remote_addr: &text[log_parts_index[0]..log_parts_index[1]],
+        remote_user: &text[log_parts_index[2]..log_parts_index[3]],
+        time_local: &text[log_parts_index[4]..log_parts_index[5]],
+        request: &text[log_parts_index[6]..log_parts_index[7]],
+        status: &text[log_parts_index[8]..log_parts_index[9]], 
+        body_bytes_sent: &text[log_parts_index[10]..log_parts_index[11]],
+        http_referer: &text[log_parts_index[12]..log_parts_index[13]],
+        http_user_agent: &text[log_parts_index[14]..log_parts_index[15]],
     })
 }
