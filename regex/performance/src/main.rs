@@ -11,7 +11,7 @@ fn main() {
         r#"8.8.8.8 - - [28/Oct/2021:00:18:22 +0100] "GET / HTTP/1.1" 200 77 "-" "foo bar 1""#;
     println!("Parsing log: {:?}", log);
     let loops_number = 5_000;
-    //let loops_number = 1;
+    let loops_number = 1;
     let start = Instant::now();
     for _ in 0..loops_number {
         let _result = get_regex_result_with_match(&log);
@@ -257,39 +257,30 @@ fn get_match_len(bytes: &[u8], byte_to_match: u8) -> usize {
 }
 
 fn get_regex_result_without_regex(text: &str) -> Option<Log> {
-    let mut characters_checked = 0;
     let mut log_parts_index = vec![0];
     let bytes = text.as_bytes();
     // remote_addr
     log_parts_index.push(get_match_len(&bytes, b' '));
-    characters_checked += log_parts_index[log_parts_index.len() -1];
-    characters_checked += 3;
     // remote_user
-    log_parts_index.push(characters_checked);
-    log_parts_index.push(characters_checked + get_match_len(&bytes[characters_checked..], b'[') - 1);
+    log_parts_index.push(log_parts_index[log_parts_index.len() - 1] + 3);
+    log_parts_index.push(log_parts_index[log_parts_index.len() - 1] + get_match_len(&bytes[log_parts_index[log_parts_index.len() -1]..], b'[') - 1);
     // time_local 
-    characters_checked += 3;
-    log_parts_index.push(characters_checked);
-    log_parts_index.push(characters_checked + get_match_len(&bytes[characters_checked..], b']'));
+    log_parts_index.push(log_parts_index[log_parts_index.len() - 1] + 2);
+    log_parts_index.push(log_parts_index[log_parts_index.len() -1] + get_match_len(&bytes[log_parts_index[log_parts_index.len() -1]..], b']'));
     // request 
-    characters_checked = log_parts_index[log_parts_index.len() -1] + 3;
-    log_parts_index.push(characters_checked);
-    log_parts_index.push(characters_checked + get_match_len(&bytes[characters_checked..], b'"'));
+    log_parts_index.push(log_parts_index[log_parts_index.len() -1] + 3);
+    log_parts_index.push(log_parts_index[log_parts_index.len() -1] + get_match_len(&bytes[log_parts_index[log_parts_index.len() -1]..], b'"'));
     // status 
-    characters_checked = log_parts_index[log_parts_index.len() -1] + 2;
-    log_parts_index.push(characters_checked);
-    log_parts_index.push(characters_checked + get_match_len(&bytes[characters_checked..], b' '));
+    log_parts_index.push(log_parts_index[log_parts_index.len() -1] + 2);
+    log_parts_index.push(log_parts_index[log_parts_index.len() -1] + get_match_len(&bytes[log_parts_index[log_parts_index.len() -1]..], b' '));
     // body_bytes_sent 
-    characters_checked = log_parts_index[log_parts_index.len() -1] + 1;
-    log_parts_index.push(characters_checked);
-    log_parts_index.push(characters_checked + get_match_len(&bytes[characters_checked..], b' '));
+    log_parts_index.push(log_parts_index[log_parts_index.len() -1] + 1);
+    log_parts_index.push(log_parts_index[log_parts_index.len() -1] + get_match_len(&bytes[log_parts_index[log_parts_index.len() -1]..], b' '));
     // http_referer
-    characters_checked = log_parts_index[log_parts_index.len() -1] + 2;
-    log_parts_index.push(characters_checked);
-    log_parts_index.push(characters_checked + get_match_len(&bytes[characters_checked..], b'"'));
+    log_parts_index.push(log_parts_index[log_parts_index.len() -1] + 2);
+    log_parts_index.push(log_parts_index[log_parts_index.len() -1] + get_match_len(&bytes[log_parts_index[log_parts_index.len() -1]..], b'"'));
     // http_user_agent
-    characters_checked = log_parts_index[log_parts_index.len() -1] + 3;
-    log_parts_index.push(characters_checked);
+    log_parts_index.push(log_parts_index[log_parts_index.len() -1] + 3);
     log_parts_index.push(text.len() -1);
     //println!("{:?} {:?}", &log_parts_index, &characters_checked);
 
