@@ -10,8 +10,8 @@ fn main() {
     let log =
         r#"8.8.8.8 - - [28/Oct/2021:00:18:22 +0100] "GET / HTTP/1.1" 200 77 "-" "foo bar 1""#;
     println!("Parsing log: {:?}", log);
-    //let loops_number = 5_000;
-    let loops_number = 1;
+    let loops_number = 5_000;
+    //let loops_number = 1;
     let start = Instant::now();
     for _ in 0..loops_number {
         let _result = get_regex_result_with_match(&log);
@@ -31,11 +31,11 @@ fn main() {
     let duration_groups = start.elapsed();
     let start = Instant::now();
     for _ in 0..loops_number {
-        let result = get_regex_result_without_regex(&log);
-        println!("{:?}", result);
+        let _result = get_regex_result_without_regex(&log);
+        //println!("{:?}", result);
     }
     let duration_without_regex = start.elapsed();
-    println!("Time elapsed macth: {:?}", duration_match);
+    println!("Time elapsed match: {:?}", duration_match);
     println!("Time elapsed find: {:?}", duration_find);
     println!("Time elapsed groups: {:?}", duration_groups);
     println!("Time elapsed without regex: {:?}", duration_without_regex);
@@ -260,41 +260,40 @@ fn get_regex_result_without_regex(text: &str) -> Option<Log> {
     let mut characters_checked = 0;
     let mut log_parts_index = vec![0];
     let bytes = text.as_bytes();
+    // remote_addr
     log_parts_index.push(get_match_len(&bytes, b' '));
     characters_checked += log_parts_index[log_parts_index.len() -1];
     characters_checked += 3;
-    println!("To parse: {:?}", &text[characters_checked..]);
+    // remote_user
     log_parts_index.push(characters_checked);
     log_parts_index.push(characters_checked + get_match_len(&bytes[characters_checked..], b'[') - 1);
-    characters_checked += log_parts_index[log_parts_index.len() -1];
-    println!("To parse: {:?}", &text[characters_checked..]);
+    // time_local 
     characters_checked += 3;
     log_parts_index.push(characters_checked);
-
     log_parts_index.push(characters_checked + get_match_len(&bytes[characters_checked..], b']'));
-    characters_checked += log_parts_index[log_parts_index.len() -1];
-    println!("{:?}", &log_parts_index);
-    //characters_checked += 4;
-    //log_parts_index.push(characters_checked + get_match_len(&bytes[characters_checked..], b'"'));
+    // request 
+    characters_checked = log_parts_index[log_parts_index.len() -1] + 3;
+    log_parts_index.push(characters_checked);
+    log_parts_index.push(characters_checked + get_match_len(&bytes[characters_checked..], b'"'));
+    // status 
+    characters_checked = log_parts_index[log_parts_index.len() -1] + 2;
+    log_parts_index.push(characters_checked);
+    log_parts_index.push(characters_checked + get_match_len(&bytes[characters_checked..], b' '));
+    // body_bytes_sent 
+    characters_checked = log_parts_index[log_parts_index.len() -1] + 1;
+    log_parts_index.push(characters_checked);
+    log_parts_index.push(characters_checked + get_match_len(&bytes[characters_checked..], b' '));
+    // http_referer
+    characters_checked = log_parts_index[log_parts_index.len() -1] + 2;
+    log_parts_index.push(characters_checked);
+    log_parts_index.push(characters_checked + get_match_len(&bytes[characters_checked..], b'"'));
+    // http_user_agent
+    characters_checked = log_parts_index[log_parts_index.len() -1] + 3;
+    log_parts_index.push(characters_checked);
+    log_parts_index.push(text.len() -1);
+    //println!("{:?} {:?}", &log_parts_index, &characters_checked);
 
-    let t_len = text.len();
-    let mut vec2 = vec![
-    t_len-14,
-    t_len-13,
-    t_len-12,
-    t_len-11,
-    t_len-10,
-    t_len-9,
-    t_len-8,
-    t_len-7,
-    t_len-6,
-    t_len-5,
-    t_len-4,
-    t_len-3,
-    t_len-2,
-    t_len-1,
-    t_len];
-    log_parts_index.append(&mut vec2);
+    //let log_parts_index = vec![0, 7, 10, 11, 13, 39, 42, 56, 58, 61, 62, 64, 66, 67, 70, 79];
     Some(Log {
         remote_addr: &text[log_parts_index[0]..log_parts_index[1]],
         remote_user: &text[log_parts_index[2]..log_parts_index[3]],
