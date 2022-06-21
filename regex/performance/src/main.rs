@@ -13,31 +13,31 @@ fn main() {
     //let loops_number = 1;
     let start = Instant::now();
     for _ in 0..loops_number {
-        let _result = get_regex_result_with_match(log);
+        let _result = get_result_with_regex_match(log);
         //println!("{:?}", _result);
     }
     let duration_match = start.elapsed();
     let start = Instant::now();
     for _ in 0..loops_number {
-        let _result = get_regex_result_with_find(log);
+        let _result = get_result_with_regex_find(log);
         //println!("{:?}", _result);
     }
     let duration_find = start.elapsed();
     let start = Instant::now();
     for _ in 0..loops_number {
-        let _result = get_regex_result_with_groups(log);
+        let _result = get_result_with_regex_groups(log);
         //println!("{:?}", _result);
     }
     let duration_groups = start.elapsed();
     let start = Instant::now();
     for _ in 0..loops_number {
-        let _result = get_regex_result_without_regex(log);
+        let _result = get_result_without_regex(log);
         //println!("{:?}", _result);
     }
     let duration_without_regex = start.elapsed();
     let start = Instant::now();
     for _ in 0..loops_number {
-        let _result = get_regex_result_without_regex_one_loop(log);
+        let _result = get_result_without_regex_one_loop(log);
         //println!("{:?}", _result);
     }
     let duration_without_regex_one_loop = start.elapsed();
@@ -77,7 +77,7 @@ impl<'a> fmt::Display for Log<'a> {
     }
 }
 
-fn get_regex_result_with_match(text: &str) -> Option<Log> {
+fn get_result_with_regex_match(text: &str) -> Option<Log> {
     lazy_static! {
         static ref RE: Regex = Regex::new(
             r#"(?x)
@@ -118,7 +118,7 @@ fn get_regex_result_with_match(text: &str) -> Option<Log> {
     None
 }
 
-fn get_regex_result_with_find(text: &str) -> Option<Log> {
+fn get_result_with_regex_find(text: &str) -> Option<Log> {
     let mut characters_checked = 0;
     lazy_static! {
         static ref RE_IPV4: Regex = Regex::new(r"(\d{1,3}[\.]){3}\d{1,3}",).unwrap();
@@ -195,7 +195,7 @@ fn get_regex_result_with_find(text: &str) -> Option<Log> {
     })
 }
 
-fn get_regex_result_with_groups(text: &str) -> Option<Log> {
+fn get_result_with_regex_groups(text: &str) -> Option<Log> {
     lazy_static! {
         static ref RE: Regex = Regex::new(
             r#"(?x)
@@ -266,7 +266,7 @@ fn get_match_len(bytes: &[u8], byte_to_match: u8) -> usize {
     bytes.len()
 }
 
-fn get_regex_result_without_regex(text: &str) -> Option<Log> {
+fn get_result_without_regex(text: &str) -> Option<Log> {
     let mut log_parts_index = vec![0];
     let bytes = text.as_bytes();
     // remote_addr
@@ -325,7 +325,7 @@ fn get_regex_result_without_regex(text: &str) -> Option<Log> {
     })
 }
 
-fn get_regex_result_without_regex_one_loop(text: &str) -> Option<Log> {
+fn get_result_without_regex_one_loop(text: &str) -> Option<Log> {
     let mut log_parts_index = vec![0];
     let characters_to_match = vec![
         b' ',
