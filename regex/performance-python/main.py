@@ -6,7 +6,6 @@ import re
 
 
 class Log:
-
     def __init__(
         self,
         remote_addr: str,
@@ -38,6 +37,7 @@ class Log:
             self.http_referer,
             self.http_user_agent,
         )
+
 
 # https://docs.nginx.com/nginx/admin-guide/monitoring/logging/
 REGEX = re.compile(
@@ -81,17 +81,18 @@ def get_log(line: str) -> Optional[Log]:
         )
     )
 
+
 def get_result_without_regex_one_loop(text: str) -> Log:
     log_parts_index = [0]
     characters_to_match = [
-        ' ',
-        ' ',
-        '[',
-        ']',
+        " ",
+        " ",
+        "[",
+        "]",
         '"',
         '"',
-        ' ',
-        ' ',
+        " ",
+        " ",
         '"',
         '"',
         '"',
@@ -105,14 +106,14 @@ def get_result_without_regex_one_loop(text: str) -> Log:
                 match_index += 1
         text_index += 1
     return Log(
-        remote_addr= text[log_parts_index[0]:log_parts_index[1]],
-        remote_user= text[log_parts_index[2] + 1:log_parts_index[3] - 1],
-        time_local= text[log_parts_index[3] + 1:log_parts_index[4]],
-        request= text[log_parts_index[5] + 1:log_parts_index[6]],
-        status= text[log_parts_index[7] + 1: log_parts_index[8]],
-        body_bytes_sent= text[log_parts_index[8] + 1: log_parts_index[9] - 1],
-        http_referer= text[log_parts_index[9] + 1:log_parts_index[10]],
-        http_user_agent= text[log_parts_index[11] + 1:log_parts_index[12]],
+        remote_addr=text[log_parts_index[0] : log_parts_index[1]],
+        remote_user=text[log_parts_index[2] + 1 : log_parts_index[3] - 1],
+        time_local=text[log_parts_index[3] + 1 : log_parts_index[4]],
+        request=text[log_parts_index[5] + 1 : log_parts_index[6]],
+        status=text[log_parts_index[7] + 1 : log_parts_index[8]],
+        body_bytes_sent=text[log_parts_index[8] + 1 : log_parts_index[9] - 1],
+        http_referer=text[log_parts_index[9] + 1 : log_parts_index[10]],
+        http_user_agent=text[log_parts_index[11] + 1 : log_parts_index[12]],
     )
 
 
@@ -126,22 +127,19 @@ def run():
     start = timer()
     for i in range(loops_number):
         result = get_log(log)
-        #print(result)
+        # print(result)
     end = timer()
     duration = end - start
-    #print(f"Time elapsed: {duration}s")
+    # print(f"Time elapsed: {duration}s")
     print(f"Time elapsed groups: {duration * 1000}ms")
     start = timer()
     for i in range(loops_number):
         result = get_result_without_regex_one_loop(log)
-        #print(result)
+        # print(result)
     end = timer()
     duration = end - start
-    #print(f"Time elapsed: {duration}s")
+    # print(f"Time elapsed: {duration}s")
     print(f"Time elapsed without regex: {duration * 1000}ms")
-
-
-
 
 
 if __name__ == "__main__":
