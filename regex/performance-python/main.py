@@ -64,7 +64,7 @@ REGEX = re.compile(
 )
 
 
-def get_log(line: str) -> Optional[Log]:
+def get_log_with_regex_groups(line: str) -> Optional[Log]:
     match = re.search(REGEX, line)
     return (
         None
@@ -126,7 +126,7 @@ def run():
     loops_number = 5_000
     start = timer()
     for i in range(loops_number):
-        result = get_log(log)
+        result = get_log_with_regex_groups(log)
         # print(result)
     end = timer()
     duration = end - start
