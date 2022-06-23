@@ -39,55 +39,131 @@ class Log:
         )
 
 
-def get_result_with_regex_math(text: str) -> Log:
+def get_result_with_regex_match(text: str) -> Log:
     characters_checked = 0;
-    remote_addr = re.match(r"(\d{1,3}[\.]){3}\d{1,3}", text).group()
-#    }
-#    let mut log_parts_index = vec![0];
-#    let mut re_result = RE_IPV4.find(text).unwrap();
-#    log_parts_index.push(re_result.end());
-#    characters_checked += re_result.end();
-#    characters_checked += 3;
-#    log_parts_index.push(characters_checked);
-#    lazy_static! {
-#        static ref RE_REMOTE_USER: Regex = Regex::new(r".+\s\[").unwrap();
-#    }
-#    re_result = RE_REMOTE_USER.find(&text[characters_checked..]).unwrap();
-#    characters_checked += re_result.end();
-#    log_parts_index.push(characters_checked - 2);
-#    lazy_static! {
-#        static ref RE_TIME_LOCAL: Regex =
-#            Regex::new(r"\d{2}/[[:alpha:]]{3}/\d{4}:\d{2}:\d{2}:\d{2}\s\+\d{4}",).unwrap();
-#    }
-#    log_parts_index.push(characters_checked);
-#    re_result = RE_TIME_LOCAL.find(&text[characters_checked..]).unwrap();
-#    characters_checked += re_result.end();
-#    log_parts_index.push(characters_checked);
-#    characters_checked += 3;
-#    log_parts_index.push(characters_checked);
-#    lazy_static! {
-#        static ref RE_REQUEST: Regex = Regex::new(r#"[[:alpha:]].*"\s\d"#).unwrap();
-#    }
-#    re_result = RE_REQUEST.find(&text[characters_checked..]).unwrap();
-#    characters_checked += re_result.end() - 1;
-#    log_parts_index.push(characters_checked - 2);
-#    log_parts_index.push(characters_checked);
-#    //lazy_static! {
-#    //    static ref RE_STATUS: Regex = Regex::new(r"\d{3}").unwrap();
-#    //}
-#    //let status = RE_STATUS.find(&text[characters_checked..]).unwrap();
-#    //characters_checked += status.end();
-#    characters_checked += 3;
-#    log_parts_index.push(characters_checked);
-#    log_parts_index.push(characters_checked + 1);
-#    lazy_static! {
-#        static ref RE_BODY_BYTES_SENT: Regex = Regex::new(r"\d{1,3}").unwrap();
-#    }
-#    let body_bytes_sent = RE_BODY_BYTES_SENT
-#        .find(&text[characters_checked..])
-#        .unwrap();
-#    characters_checked += body_bytes_sent.end();
-#    log_parts_index.push(characters_checked);
+    log_parts_index = [0]
+    re_result = re.match(r"(\d{1,3}[\.]){3}\d{1,3}", text)
+    log_parts_index.append(re_result.end())
+    characters_checked += re_result.end()
+    characters_checked += 3
+    log_parts_index.append(characters_checked)
+    re_result = re.match(
+        r".+\s\[",
+        text[characters_checked:],
+    )
+    characters_checked += re_result.end()
+    log_parts_index.append(characters_checked - 2)
+    log_parts_index.append(characters_checked)
+    re_result = re.match(
+            r"\d{2}/\w{3}/\d{4}:\d{2}:\d{2}:\d{2}\s\+\d{4}",
+        text[characters_checked:],
+    )
+    characters_checked += re_result.end()
+    log_parts_index.append(characters_checked)
+    characters_checked += 3
+    log_parts_index.append(characters_checked)
+    re_result = re.match(
+        r'\w.*"\s\d',
+        text[characters_checked:],
+    )
+    characters_checked += re_result.end() - 1
+    log_parts_index.append(characters_checked - 2)
+    log_parts_index.append(characters_checked)
+    characters_checked += 3
+    log_parts_index.append(characters_checked)
+    log_parts_index.append(characters_checked + 1)
+    characters_checked += 1
+    re_result = re.match(
+        r"\d{1,3}",
+        text[characters_checked:],
+    )
+    characters_checked += re_result.end()
+    log_parts_index.append(characters_checked)
+    characters_checked += 2;
+    log_parts_index.append(characters_checked);
+    re_result = re.match(
+       r'.*"\s',
+        text[characters_checked:],
+    )
+    characters_checked += re_result.end()
+    log_parts_index.append(characters_checked - 2)
+    characters_checked += 1
+    log_parts_index.append(characters_checked)
+    log_parts_index.append(len(text) - 1)
+    return Log (
+        remote_addr= text[log_parts_index[0]:log_parts_index[1]],
+        remote_user= text[log_parts_index[2]:log_parts_index[3]],
+        time_local= text[log_parts_index[4]:log_parts_index[5]],
+        request= text[log_parts_index[6]:log_parts_index[7]],
+        status= text[log_parts_index[8]:log_parts_index[9]],
+        body_bytes_sent= text[log_parts_index[10]:log_parts_index[11]],
+        http_referer= text[log_parts_index[12]:log_parts_index[13]],
+        http_user_agent= text[log_parts_index[14]:log_parts_index[15]],
+    )
+
+
+def get_result_with_regex_search(text: str) -> Log:
+    characters_checked = 0;
+    log_parts_index = [0]
+    re_result = re.search(r"(\d{1,3}[\.]){3}\d{1,3}", text)
+    log_parts_index.append(re_result.end())
+    characters_checked += re_result.end()
+    characters_checked += 3
+    log_parts_index.append(characters_checked)
+    re_result = re.search(
+        r".+\s\[",
+        text[characters_checked:],
+    )
+    characters_checked += re_result.end()
+    log_parts_index.append(characters_checked - 2)
+    log_parts_index.append(characters_checked)
+    re_result = re.search(
+            r"\d{2}/\w{3}/\d{4}:\d{2}:\d{2}:\d{2}\s\+\d{4}",
+        text[characters_checked:],
+    )
+    characters_checked += re_result.end()
+    log_parts_index.append(characters_checked)
+    characters_checked += 3
+    log_parts_index.append(characters_checked)
+    re_result = re.search(
+        r'\w.*"\s\d',
+        text[characters_checked:],
+    )
+    characters_checked += re_result.end() - 1
+    log_parts_index.append(characters_checked - 2)
+    log_parts_index.append(characters_checked)
+    characters_checked += 3
+    log_parts_index.append(characters_checked)
+    log_parts_index.append(characters_checked + 1)
+    characters_checked += 1
+    re_result = re.search(
+        r"\d{1,3}",
+        text[characters_checked:],
+    )
+    characters_checked += re_result.end()
+    log_parts_index.append(characters_checked)
+    characters_checked += 2;
+    log_parts_index.append(characters_checked);
+    re_result = re.search(
+       r'.*"\s',
+        text[characters_checked:],
+    )
+    characters_checked += re_result.end()
+    log_parts_index.append(characters_checked - 2)
+    characters_checked += 1
+    log_parts_index.append(characters_checked)
+    log_parts_index.append(len(text) - 1)
+    return Log (
+        remote_addr= text[log_parts_index[0]:log_parts_index[1]],
+        remote_user= text[log_parts_index[2]:log_parts_index[3]],
+        time_local= text[log_parts_index[4]:log_parts_index[5]],
+        request= text[log_parts_index[6]:log_parts_index[7]],
+        status= text[log_parts_index[8]:log_parts_index[9]],
+        body_bytes_sent= text[log_parts_index[10]:log_parts_index[11]],
+        http_referer= text[log_parts_index[12]:log_parts_index[13]],
+        http_user_agent= text[log_parts_index[14]:log_parts_index[15]],
+    )
+
 
 
 # https://docs.nginx.com/nginx/admin-guide/monitoring/logging/
@@ -187,7 +263,8 @@ def get_result_without_regex_one_loop(text: str) -> Log:
 
 
 def run():
-    run_parse(get_result_with_regex_math, "match")
+    run_parse(get_result_with_regex_match, "match")
+    run_parse(get_result_with_regex_search, "search")
     run_parse(get_log_with_regex_match_groups, "match groups")
     run_parse(get_log_with_regex_search_groups, "search groups")
     run_parse(get_result_without_regex_one_loop, "without regex")
