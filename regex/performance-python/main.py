@@ -39,10 +39,9 @@ class Log:
         )
 
 
-#def get_result_with_regex_math(text: str) -> Log:
-#    characters_checked = 0;
-#    lazy_static! {
-#        static ref RE_IPV4: Regex = Regex::new(r"(\d{1,3}[\.]){3}\d{1,3}",).unwrap();
+def get_result_with_regex_math(text: str) -> Log:
+    characters_checked = 0;
+    remote_addr = re.match(r"(\d{1,3}[\.]){3}\d{1,3}", text).group()
 #    }
 #    let mut log_parts_index = vec![0];
 #    let mut re_result = RE_IPV4.find(text).unwrap();
@@ -89,12 +88,6 @@ class Log:
 #        .unwrap();
 #    characters_checked += body_bytes_sent.end();
 #    log_parts_index.push(characters_checked);
-#
-
-
-
-
-
 
 
 # https://docs.nginx.com/nginx/admin-guide/monitoring/logging/
@@ -194,6 +187,12 @@ def get_result_without_regex_one_loop(text: str) -> Log:
 
 
 def run():
+    run_parse(get_result_with_regex_math, "match")
+    run_parse(get_log_with_regex_match_groups, "match groups")
+    run_parse(get_log_with_regex_search_groups, "search groups")
+    run_parse(get_result_without_regex_one_loop, "without regex")
+
+def run_parse(parse_function, parse_description: str):
     log = (
         '8.8.8.8 - abc [28/Nov/2021:00:18:22 +0100] "GET / HTTP/1.1" 200 77 "-"'
         ' "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36'
@@ -202,28 +201,12 @@ def run():
     loops_number = 5_000
     start = timer()
     for i in range(loops_number):
-        result = get_log_with_regex_match_groups(log)
+        result = parse_function(log)
         #print(result)
     end = timer()
     duration = end - start
     # print(f"Time elapsed: {duration}s")
-    print(f"Time elapsed match groups: {duration * 1000}ms")
-    start = timer()
-    for i in range(loops_number):
-        result = get_log_with_regex_search_groups(log)
-        # print(result)
-    end = timer()
-    duration = end - start
-    # print(f"Time elapsed: {duration}s")
-    print(f"Time elapsed search groups: {duration * 1000}ms")
-    start = timer()
-    for i in range(loops_number):
-        result = get_result_without_regex_one_loop(log)
-        # print(result)
-    end = timer()
-    duration = end - start
-    # print(f"Time elapsed: {duration}s")
-    print(f"Time elapsed without regex: {duration * 1000}ms")
+    print(f"Time elapsed {parse_description}: {duration * 1000}ms")
 
 
 if __name__ == "__main__":
