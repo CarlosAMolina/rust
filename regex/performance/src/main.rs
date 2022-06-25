@@ -5,48 +5,25 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 fn main() {
+    run_parse(get_result_with_regex_match, "match");
+    run_parse(get_result_with_regex_find, "find");
+    run_parse(get_result_with_regex_captures, "captures");
+    run_parse(get_result_without_regex, "no regex");
+    run_parse(get_result_without_regex_one_loop, "no regex one loop");
+}
+
+fn run_parse(parse_function: fn(&str) -> Option<Log>, parse_description: &str) {
     let log = r#"8.8.8.8 - - [28/Oct/2021:00:18:22 +0100] "GET / HTTP/1.1" 200 77 "-" "foo bar 1""#;
-    println!("Parsing log: {:?}", log);
+    //println!("Parsing log: {:?}", log);
     let loops_number = 5_000;
     //let loops_number = 1;
     let start = Instant::now();
     for _ in 0..loops_number {
-        let _result = get_result_with_regex_match(log);
+        let _result = parse_function(log);
         //println!("{:?}", _result);
     }
-    let duration_match = start.elapsed();
-    let start = Instant::now();
-    for _ in 0..loops_number {
-        let _result = get_result_with_regex_find(log);
-        //println!("{:?}", _result);
-    }
-    let duration_find = start.elapsed();
-    let start = Instant::now();
-    for _ in 0..loops_number {
-        let _result = get_result_with_regex_groups(log);
-        //println!("{:?}", _result);
-    }
-    let duration_groups = start.elapsed();
-    let start = Instant::now();
-    for _ in 0..loops_number {
-        let _result = get_result_without_regex(log);
-        //println!("{:?}", _result);
-    }
-    let duration_without_regex = start.elapsed();
-    let start = Instant::now();
-    for _ in 0..loops_number {
-        let _result = get_result_without_regex_one_loop(log);
-        //println!("{:?}", _result);
-    }
-    let duration_without_regex_one_loop = start.elapsed();
-    println!("Time elapsed match: {:?}", duration_match);
-    println!("Time elapsed find: {:?}", duration_find);
-    println!("Time elapsed groups: {:?}", duration_groups);
-    println!("Time elapsed without regex: {:?}", duration_without_regex);
-    println!(
-        "Time elapsed without regex one loop: {:?}",
-        duration_without_regex_one_loop
-    );
+    let duration = start.elapsed();
+    println!("Time elapsed with {:?}: {:?}", parse_description, duration);
 }
 
 #[derive(Debug, PartialEq)]
@@ -196,7 +173,7 @@ fn get_result_with_regex_find(text: &str) -> Option<Log> {
     })
 }
 
-fn get_result_with_regex_groups(text: &str) -> Option<Log> {
+fn get_result_with_regex_captures(text: &str) -> Option<Log> {
     lazy_static! {
         static ref RE: Regex = Regex::new(
             r#"(?x)
