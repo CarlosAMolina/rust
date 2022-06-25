@@ -40,7 +40,7 @@ class Log:
 
 
 def get_result_with_regex_match(text: str) -> Log:
-    characters_checked = 0;
+    characters_checked = 0
     log_parts_index = [0]
     re_result = re.match(r"(\d{1,3}[\.]){3}\d{1,3}", text)
     log_parts_index.append(re_result.end())
@@ -55,7 +55,7 @@ def get_result_with_regex_match(text: str) -> Log:
     log_parts_index.append(characters_checked - 2)
     log_parts_index.append(characters_checked)
     re_result = re.match(
-            r"\d{2}/\w{3}/\d{4}:\d{2}:\d{2}:\d{2}\s\+\d{4}",
+        r"\d{2}/\w{3}/\d{4}:\d{2}:\d{2}:\d{2}\s\+\d{4}",
         text[characters_checked:],
     )
     characters_checked += re_result.end()
@@ -79,10 +79,10 @@ def get_result_with_regex_match(text: str) -> Log:
     )
     characters_checked += re_result.end()
     log_parts_index.append(characters_checked)
-    characters_checked += 2;
-    log_parts_index.append(characters_checked);
+    characters_checked += 2
+    log_parts_index.append(characters_checked)
     re_result = re.match(
-       r'.*"\s',
+        r'.*"\s',
         text[characters_checked:],
     )
     characters_checked += re_result.end()
@@ -90,20 +90,20 @@ def get_result_with_regex_match(text: str) -> Log:
     characters_checked += 1
     log_parts_index.append(characters_checked)
     log_parts_index.append(len(text) - 1)
-    return Log (
-        remote_addr= text[log_parts_index[0]:log_parts_index[1]],
-        remote_user= text[log_parts_index[2]:log_parts_index[3]],
-        time_local= text[log_parts_index[4]:log_parts_index[5]],
-        request= text[log_parts_index[6]:log_parts_index[7]],
-        status= text[log_parts_index[8]:log_parts_index[9]],
-        body_bytes_sent= text[log_parts_index[10]:log_parts_index[11]],
-        http_referer= text[log_parts_index[12]:log_parts_index[13]],
-        http_user_agent= text[log_parts_index[14]:log_parts_index[15]],
+    return Log(
+        remote_addr=text[log_parts_index[0] : log_parts_index[1]],
+        remote_user=text[log_parts_index[2] : log_parts_index[3]],
+        time_local=text[log_parts_index[4] : log_parts_index[5]],
+        request=text[log_parts_index[6] : log_parts_index[7]],
+        status=text[log_parts_index[8] : log_parts_index[9]],
+        body_bytes_sent=text[log_parts_index[10] : log_parts_index[11]],
+        http_referer=text[log_parts_index[12] : log_parts_index[13]],
+        http_user_agent=text[log_parts_index[14] : log_parts_index[15]],
     )
 
 
 def get_result_with_regex_search(text: str) -> Log:
-    characters_checked = 0;
+    characters_checked = 0
     log_parts_index = [0]
     re_result = re.search(r"(\d{1,3}[\.]){3}\d{1,3}", text)
     log_parts_index.append(re_result.end())
@@ -118,7 +118,7 @@ def get_result_with_regex_search(text: str) -> Log:
     log_parts_index.append(characters_checked - 2)
     log_parts_index.append(characters_checked)
     re_result = re.search(
-            r"\d{2}/\w{3}/\d{4}:\d{2}:\d{2}:\d{2}\s\+\d{4}",
+        r"\d{2}/\w{3}/\d{4}:\d{2}:\d{2}:\d{2}\s\+\d{4}",
         text[characters_checked:],
     )
     characters_checked += re_result.end()
@@ -142,10 +142,10 @@ def get_result_with_regex_search(text: str) -> Log:
     )
     characters_checked += re_result.end()
     log_parts_index.append(characters_checked)
-    characters_checked += 2;
-    log_parts_index.append(characters_checked);
+    characters_checked += 2
+    log_parts_index.append(characters_checked)
     re_result = re.search(
-       r'.*"\s',
+        r'.*"\s',
         text[characters_checked:],
     )
     characters_checked += re_result.end()
@@ -153,17 +153,16 @@ def get_result_with_regex_search(text: str) -> Log:
     characters_checked += 1
     log_parts_index.append(characters_checked)
     log_parts_index.append(len(text) - 1)
-    return Log (
-        remote_addr= text[log_parts_index[0]:log_parts_index[1]],
-        remote_user= text[log_parts_index[2]:log_parts_index[3]],
-        time_local= text[log_parts_index[4]:log_parts_index[5]],
-        request= text[log_parts_index[6]:log_parts_index[7]],
-        status= text[log_parts_index[8]:log_parts_index[9]],
-        body_bytes_sent= text[log_parts_index[10]:log_parts_index[11]],
-        http_referer= text[log_parts_index[12]:log_parts_index[13]],
-        http_user_agent= text[log_parts_index[14]:log_parts_index[15]],
+    return Log(
+        remote_addr=text[log_parts_index[0] : log_parts_index[1]],
+        remote_user=text[log_parts_index[2] : log_parts_index[3]],
+        time_local=text[log_parts_index[4] : log_parts_index[5]],
+        request=text[log_parts_index[6] : log_parts_index[7]],
+        status=text[log_parts_index[8] : log_parts_index[9]],
+        body_bytes_sent=text[log_parts_index[10] : log_parts_index[11]],
+        http_referer=text[log_parts_index[12] : log_parts_index[13]],
+        http_user_agent=text[log_parts_index[14] : log_parts_index[15]],
     )
-
 
 
 # https://docs.nginx.com/nginx/admin-guide/monitoring/logging/
@@ -269,6 +268,7 @@ def run():
     run_parse(get_log_with_regex_search_groups, "search groups")
     run_parse(get_result_without_regex_one_loop, "without regex")
 
+
 def run_parse(parse_function, parse_description: str):
     log = (
         '8.8.8.8 - abc [28/Nov/2021:00:18:22 +0100] "GET / HTTP/1.1" 200 77 "-"'
@@ -279,7 +279,7 @@ def run_parse(parse_function, parse_description: str):
     start = timer()
     for i in range(loops_number):
         result = parse_function(log)
-        #print(result)
+        # print(result)
     end = timer()
     duration = end - start
     # print(f"Time elapsed: {duration}s")
