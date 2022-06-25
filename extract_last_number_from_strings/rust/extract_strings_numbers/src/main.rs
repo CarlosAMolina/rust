@@ -4,6 +4,21 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 fn main() {
+    // First time using regex takes more time
+    run_parse(
+        get_filenames_numbers_with_regex_captures,
+        "regex captures 1st time",
+    );
+    run_parse(get_filenames_numbers_with_regex_captures, "regex captures");
+    run_parse(
+        get_filenames_numbers_with_regex_match,
+        "regex match 1st time",
+    );
+    run_parse(get_filenames_numbers_with_regex_match, "regex match");
+    run_parse(get_filenames_numbers_with_split, "split");
+}
+
+fn run_parse(parse_function: fn(&[&str]) -> Vec<u8>, parse_description: &str) {
     let filenames = vec![
         "foo",
         "foo.txt",
@@ -13,22 +28,19 @@ fn main() {
         "access.log.10",
         "access.log.1",
     ];
-    let result_expected = vec![5, 2, 10, 1];
-    let mut start = Instant::now();
-    assert_eq!(
-        result_expected,
-        get_filenames_numbers_with_regex_captures(&filenames)
+
+    let start = Instant::now();
+    let _result = parse_function(&filenames);
+    //println!("{:?}", _result);
+    //assert_eq!(
+    //    vec![5, 2, 10, 1],
+    //    parse_function(&filenames)
+    //);
+    println!(
+        "Time elapsed with {:?}: {:?}",
+        parse_description,
+        start.elapsed()
     );
-    println!("Time elapsed with regex captures: {:?}", start.elapsed());
-    start = Instant::now();
-    get_filenames_numbers_with_regex_match(&filenames);
-    println!("Time elapsed with regex match: {:?}", start.elapsed());
-    start = Instant::now();
-    assert_eq!(
-        result_expected,
-        get_filenames_numbers_with_split(&filenames)
-    );
-    println!("Time elapsed with split: {:?}", start.elapsed());
 }
 
 fn get_filenames_numbers_with_regex_match(filenames: &[&str]) -> Vec<u8> {
@@ -38,12 +50,11 @@ fn get_filenames_numbers_with_regex_match(filenames: &[&str]) -> Vec<u8> {
     let mut numbers = Vec::<u8>::new();
     for filename in filenames.iter() {
         if FILE_NUMBER.is_match(filename) {
-             numbers.push(1)
+            numbers.push(1)
         }
     }
     numbers
 }
-
 
 fn get_filenames_numbers_with_regex_captures(filenames: &[&str]) -> Vec<u8> {
     lazy_static! {
