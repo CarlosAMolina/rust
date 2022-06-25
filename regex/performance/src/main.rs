@@ -4,8 +4,6 @@ use std::time::Instant;
 use lazy_static::lazy_static;
 use regex::Regex;
 
-//TODO check parse log with remote user different than -
-
 fn main() {
     let log = r#"8.8.8.8 - - [28/Oct/2021:00:18:22 +0100] "GET / HTTP/1.1" 200 77 "-" "foo bar 1""#;
     println!("Parsing log: {:?}", log);
@@ -45,7 +43,10 @@ fn main() {
     println!("Time elapsed find: {:?}", duration_find);
     println!("Time elapsed groups: {:?}", duration_groups);
     println!("Time elapsed without regex: {:?}", duration_without_regex);
-    println!("Time elapsed without regex one loop: {:?}", duration_without_regex_one_loop);
+    println!(
+        "Time elapsed without regex one loop: {:?}",
+        duration_without_regex_one_loop
+    );
 }
 
 #[derive(Debug, PartialEq)]
@@ -328,17 +329,7 @@ fn get_result_without_regex(text: &str) -> Option<Log> {
 fn get_result_without_regex_one_loop(text: &str) -> Option<Log> {
     let mut log_parts_index = vec![0];
     let characters_to_match = vec![
-        b' ',
-        b' ',
-        b'[',
-        b']',
-        b'"',
-        b'"',
-        b' ',
-        b' ',
-        b'"',
-        b'"',
-        b'"',
+        b' ', b' ', b'[', b']', b'"', b'"', b' ', b' ', b'"', b'"', b'"',
     ];
     let bytes = text.as_bytes();
     let mut match_index = 0;
@@ -350,14 +341,51 @@ fn get_result_without_regex_one_loop(text: &str) -> Option<Log> {
             }
         }
     }
-    Some(Log {
-        remote_addr: &text[log_parts_index[0]..log_parts_index[1]],
-        remote_user: &text[log_parts_index[2] + 1 ..log_parts_index[3] - 1],
-        time_local: &text[log_parts_index[3] + 1 ..log_parts_index[4]],
-        request: &text[log_parts_index[5] + 1 ..log_parts_index[6]],
-        status: &text[log_parts_index[7] + 1 .. log_parts_index[8]],
-        body_bytes_sent: &text[log_parts_index[8] + 1 .. log_parts_index[9] - 1],
-        http_referer: &text[log_parts_index[9] + 1 ..log_parts_index[10]],
-        http_user_agent: &text[log_parts_index[11] + 1 ..log_parts_index[12]],
-    })
+    if log_parts_index.len() == 13 {
+        Some(Log {
+            remote_addr: &text[log_parts_index[0]..log_parts_index[1]],
+            remote_user: &text[log_parts_index[2] + 1..log_parts_index[3] - 1],
+            time_local: &text[log_parts_index[3] + 1..log_parts_index[4]],
+            request: &text[log_parts_index[5] + 1..log_parts_index[6]],
+            status: &text[log_parts_index[7] + 1..log_parts_index[8]],
+            body_bytes_sent: &text[log_parts_index[8] + 1..log_parts_index[9] - 1],
+            http_referer: &text[log_parts_index[9] + 1..log_parts_index[10]],
+            http_user_agent: &text[log_parts_index[11] + 1..log_parts_index[12]],
+        })
+    } else {
+        None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_result_without_regex_one_loop_with_correct_log() {
+        assert_ne!(
+            None,
+            get_result_without_regex_one_loop(
+                r#"8.8.8.8 - - [28/Oct/2021:00:18:22 +0100] "GET / HTTP/1.1" 200 77 "-" "foo bar 1""#
+            )
+        );
+    }
+
+    #[test]
+    fn test_get_result_without_regex_one_loop_with_correct_log_and_different_remote_user() {
+        let log_parsed = get_result_without_regex_one_loop(
+                r#"8.8.8.8 - foo user [28/Oct/2021:00:18:22 +0100] "GET / HTTP/1.1" 200 77 "-" "foo bar 1""#
+        ).unwrap();
+        assert_eq!("foo user", log_parsed.remote_user);
+    }
+
+    #[test]
+    fn test_get_result_without_regex_one_loop_with_incorrect_log() {
+        assert_eq!(
+            None,
+            get_result_without_regex_one_loop(
+                r#"8.8.8.8 - - [28/Oct/2021:00:18:22 +0100 "GET / HTTP/1.1" 200 77 "-" "foo bar 1""#
+            )
+        );
+    }
 }
