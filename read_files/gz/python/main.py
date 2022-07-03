@@ -8,7 +8,7 @@ def process_file(path):
     with gzip.open(path) as fp:
         count = 0
         for line in fp:
-            print(line)
+            #print(line)
             count += 1
     print(f"Found {count} events")
 
