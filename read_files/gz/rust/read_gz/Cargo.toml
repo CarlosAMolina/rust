@@ -1,0 +1,10 @@
+[package]
+name = "read_gz"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+flate2 = { version = "1.0.24", features = ["zlib-ng"], default-features = false }
+libflate = "1.2.0"
