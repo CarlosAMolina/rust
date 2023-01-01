@@ -1,4 +1,18 @@
+## Run
+
+```bash
+cd compress-file-as-gz
+cargo run
+```
+
+You can check the results:
+
+```bash
+cd /tmp/
+gunzip foo.txt.gz
+cat foo.txt
+```
+
 ## Resources
 
-- How to compress a directory: <https://rust-lang-nursery.github.io/rust-cookbook/compression/tar.html#working-with-tarballs>
-- How to work with file: <https://docs.rs/tar/0.4.38/tar/struct.Builder.html#method.append_file>
+- How to compress with gz: <https://docs.rs/flate2/latest/flate2/write/struct.GzEncoder.html>
