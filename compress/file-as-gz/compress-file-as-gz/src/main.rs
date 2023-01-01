@@ -5,8 +5,8 @@ use std::fs::File;
 use std::io::Write;
 
 fn main() -> Result<(), std::io::Error> {
-    let path_name_compressed_file = "/tmp/foo.txt.gz";
     let path_name_file_to_compress = "../files/foo.txt";
+    let path_name_compressed_file = "/tmp/foo.txt.gz";
     compress_file_as_gz(path_name_file_to_compress, path_name_compressed_file)?;
     Ok(())
 }
