@@ -8,11 +8,9 @@ cargo run
 You can check the results:
 
 ```bash
-cd /tmp/
-gunzip foo.txt.gz
-cat foo.txt
+gunzip /tmp/foo.txt.gz -c
 ```
 
 ## Resources
 
-- How to compress with gz: <https://docs.rs/flate2/latest/flate2/write/struct.GzEncoder.html>
+- Work with gz encoder: <https://docs.rs/flate2/latest/flate2/write/struct.GzEncoder.html>
