@@ -2,9 +2,13 @@ use std::error::Error;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
+use std::time::Instant;
 
 pub fn main() -> Result<(), Box<dyn Error>> {
+    let start = Instant::now();
     write_one_line_in_each_loop()?;
+    let duration = start.elapsed();
+    println!("Time elapsed: {:?}", duration);
     Ok(())
 }
 
