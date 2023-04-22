@@ -23,7 +23,7 @@ fn run_parse(parse_function: fn(&str) -> Option<Log>, parse_description: &str) {
         //println!("{:?}", _result);
     }
     let duration = start.elapsed();
-    println!("Time elapsed with {:?}: {:?}", parse_description, duration);
+    println!("Time elapsed with {}: {:?}", parse_description, duration);
 }
 
 #[derive(Debug, PartialEq)]
