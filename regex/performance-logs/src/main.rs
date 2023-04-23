@@ -101,9 +101,11 @@ fn get_result_with_regex_find(text: &str) -> Option<Log> {
     lazy_static! {
         static ref RE_IPV4: Regex = Regex::new(r"(\d{1,3}[\.]){3}\d{1,3}",).unwrap();
     }
+    //ipv4
     let mut log_parts_index = vec![0];
     let mut re_result = RE_IPV4.find(text).unwrap();
     log_parts_index.push(re_result.end());
+    //remote user
     characters_checked += re_result.end();
     characters_checked += 3;
     log_parts_index.push(characters_checked);
@@ -113,6 +115,7 @@ fn get_result_with_regex_find(text: &str) -> Option<Log> {
     re_result = RE_REMOTE_USER.find(&text[characters_checked..]).unwrap();
     characters_checked += re_result.end();
     log_parts_index.push(characters_checked - 2);
+    //time local
     lazy_static! {
         static ref RE_TIME_LOCAL: Regex =
             Regex::new(r"\d{2}/[[:alpha:]]{3}/\d{4}:\d{2}:\d{2}:\d{2}\s\+\d{4}",).unwrap();
@@ -121,6 +124,7 @@ fn get_result_with_regex_find(text: &str) -> Option<Log> {
     re_result = RE_TIME_LOCAL.find(&text[characters_checked..]).unwrap();
     characters_checked += re_result.end();
     log_parts_index.push(characters_checked);
+    //request
     characters_checked += 3;
     log_parts_index.push(characters_checked);
     lazy_static! {
@@ -129,6 +133,7 @@ fn get_result_with_regex_find(text: &str) -> Option<Log> {
     re_result = RE_REQUEST.find(&text[characters_checked..]).unwrap();
     characters_checked += re_result.end() - 1;
     log_parts_index.push(characters_checked - 2);
+    //status
     log_parts_index.push(characters_checked);
     //lazy_static! {
     //    static ref RE_STATUS: Regex = Regex::new(r"\d{3}").unwrap();
@@ -137,24 +142,26 @@ fn get_result_with_regex_find(text: &str) -> Option<Log> {
     //characters_checked += status.end();
     characters_checked += 3;
     log_parts_index.push(characters_checked);
+    //body bytes sent
     log_parts_index.push(characters_checked + 1);
     lazy_static! {
-        static ref RE_BODY_BYTES_SENT: Regex = Regex::new(r"\d{1,3}").unwrap();
+        static ref RE_BODY_BYTES_SENT: Regex = Regex::new(r"\d+").unwrap();
     }
     let body_bytes_sent = RE_BODY_BYTES_SENT
         .find(&text[characters_checked..])
         .unwrap();
     characters_checked += body_bytes_sent.end();
     log_parts_index.push(characters_checked);
+    //http referer
     characters_checked += 2;
     log_parts_index.push(characters_checked);
     lazy_static! {
-        static ref RE_HTTP_REFERER: Regex = Regex::new(r#".*"\s"#).unwrap();
+        static ref RE_HTTP_REFERER: Regex = Regex::new(r#".*"\s""#).unwrap();
     }
     let http_referer = RE_HTTP_REFERER.find(&text[characters_checked..]).unwrap();
     characters_checked += http_referer.end();
-    log_parts_index.push(characters_checked - 2);
-    characters_checked += 1;
+    log_parts_index.push(characters_checked - 3);
+    //http user agent
     //lazy_static! {
     //    static ref RE_HTTP_USER_AGENT: Regex = Regex::new(r#".*"$"#).unwrap();
     //}
@@ -379,5 +386,16 @@ mod tests {
         assert_eq!("77", log_parsed.body_bytes_sent);
         assert_eq!("-", log_parsed.http_referer);
         assert_eq!("foo bar 1", log_parsed.http_user_agent);
+        let log_parsed = get_result_with_regex_find(
+                r#"89.122.76.3 - - [01/Jan/2022:00:00:00 +0100] "POST /foo/admin/formLogin HTTP/1.1" 404 125837 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36""#
+        ).unwrap();
+        assert_eq!("89.122.76.3", log_parsed.remote_addr);
+        assert_eq!("-", log_parsed.remote_user);
+        assert_eq!("01/Jan/2022:00:00:00 +0100", log_parsed.time_local);
+        assert_eq!("POST /foo/admin/formLogin HTTP/1.1", log_parsed.request);
+        assert_eq!("404", log_parsed.status);
+        assert_eq!("125837", log_parsed.body_bytes_sent);
+        assert_eq!("-", log_parsed.http_referer);
+        assert_eq!("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36", log_parsed.http_user_agent);
     }
 }
