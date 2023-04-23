@@ -365,4 +365,19 @@ mod tests {
             )
         );
     }
+
+    #[test]
+    fn test_get_result_with_regex_find_returns_correct_result() {
+        let log_parsed = get_result_with_regex_find(
+                r#"8.8.8.8 - foo user [28/Oct/2021:00:18:22 +0100] "GET / HTTP/1.1" 200 77 "-" "foo bar 1""#
+        ).unwrap();
+        assert_eq!("8.8.8.8", log_parsed.remote_addr);
+        assert_eq!("foo user", log_parsed.remote_user);
+        assert_eq!("28/Oct/2021:00:18:22 +0100", log_parsed.time_local);
+        assert_eq!("GET / HTTP/1.1", log_parsed.request);
+        assert_eq!("200", log_parsed.status);
+        assert_eq!("77", log_parsed.body_bytes_sent);
+        assert_eq!("-", log_parsed.http_referer);
+        assert_eq!("foo bar 1", log_parsed.http_user_agent);
+    }
 }
