@@ -10,7 +10,7 @@ struct Args {
     #[clap(short, long, default_value = "localhost")]
     host_database: String,
     /// PORT number for the database connection
-    #[clap(long, default_value = "1234")]
+    #[clap(long, default_value = "8080")]
     port_database: u16,
 }
 
