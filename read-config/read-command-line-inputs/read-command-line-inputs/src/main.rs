@@ -5,7 +5,7 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
-    //Each field can be transformed automatically in a CLI argument with the short and long keywords, as well as set a default value in case the option is not specified when starting the application.
+    // Each field can be transformed automatically in a CLI argument with the short and long keywords, as well as set a default value in case the option is not specified when starting the application.
     /// URL for the postgres database
     #[clap(short, long, default_value = "localhost")]
     host_database: String,
@@ -24,4 +24,3 @@ fn main() {
         )
     )
 }
-

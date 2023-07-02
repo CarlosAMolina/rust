@@ -3,13 +3,6 @@
 version = 3
 
 [[package]]
-name = "accept-command-line-inputs"
-version = "0.1.0"
-dependencies = [
- "clap",
-]
-
-[[package]]
 name = "atty"
 version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -160,6 +153,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "573015e8ab27661678357f27dc26460738fd2b6c86e46f386fde94cb5d913105"
 dependencies = [
  "proc-macro2",
+]
+
+[[package]]
+name = "read-command-line-inputs"
+version = "0.1.0"
+dependencies = [
+ "clap",
 ]
 
 [[package]]

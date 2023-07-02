@@ -1,5 +1,5 @@
 [package]
-name = "accept-command-line-inputs"
+name = "read-command-line-inputs"
 version = "0.1.0"
 edition = "2021"
 
