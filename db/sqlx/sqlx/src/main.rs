@@ -61,10 +61,13 @@ async fn main() -> Result<(), sqlx::Error> {
         .expect("sqlx command failed to start");
     io::stdout().write_all(&s.stderr).unwrap();
 
-    //let pool = PgPoolOptions::new()
-    //    .max_connections(5)
-    //    .connect("postgres://postgres:pw@localhost:5432/contacts")
-    //    .await?;
+    println!("Init create tables. URL: {}", db_url);
+    let db_connection = PgPoolOptions::new()
+        .max_connections(5)
+        .connect(&db_url)
+        .await?;
+    sqlx::migrate!().run(&db_connection).await?;
+
     //// Fetch one.
     //let row: (i32, String, String) = sqlx::query_as("SELECT * from contacts.contacts.users")
     //    .fetch_one(&pool)
