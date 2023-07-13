@@ -39,12 +39,24 @@ async fn main() -> Result<(), sqlx::Error> {
         config.database_name
     );
 
-    println!("Init create database. URL: {}", db_url);
+    //println!("Init create database. URL: {}", db_url);
+    //let s = Command::new("sqlx")
+    //    .arg("database")
+    //    .arg("create")
+    //    .arg("--database-url")
+    //    .arg(db_url)
+    //    .output()
+    //    .expect("sqlx command failed to start");
+    //io::stdout().write_all(&s.stderr).unwrap();
+
+    println!("Init delete database. URL: {}", db_url);
     let s = Command::new("sqlx")
         .arg("database")
-        .arg("create")
+        .arg("drop")
         .arg("--database-url")
         .arg(db_url)
+        .arg("-y")
+        // The output function will create the final command, which we can use to execute later.
         .output()
         .expect("sqlx command failed to start");
     io::stdout().write_all(&s.stderr).unwrap();
