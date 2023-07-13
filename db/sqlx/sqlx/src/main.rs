@@ -30,19 +30,21 @@ async fn main() -> Result<(), sqlx::Error> {
         database_user: "postgres".to_string(),
     };
 
-    println!("Init create database");
+    let db_url = format!(
+        "postgres://{}:{}@{}:{}/{}",
+        config.database_user,
+        config.database_password,
+        config.database_host,
+        config.database_port,
+        config.database_name
+    );
+
+    println!("Init create database. URL: {}", db_url);
     let s = Command::new("sqlx")
         .arg("database")
         .arg("create")
         .arg("--database-url")
-        .arg(format!(
-            "postgres://{}:{}@{}:{}/{}",
-            config.database_user,
-            config.database_password,
-            config.database_host,
-            config.database_port,
-            config.database_name
-        ))
+        .arg(db_url)
         .output()
         .expect("sqlx command failed to start");
     io::stdout().write_all(&s.stderr).unwrap();
