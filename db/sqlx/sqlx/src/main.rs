@@ -91,7 +91,7 @@ async fn main() -> Result<(), sqlx::Error> {
     .await
     .unwrap();
 
-    println!("Init get data");
+    println!("Init get all data");
     let db_results = sqlx::query("SELECT * from birthdays")
         .map(|row: PgRow| Birthday {
             id_user: row.get("id_user"),
@@ -100,6 +100,27 @@ async fn main() -> Result<(), sqlx::Error> {
         .fetch_all(&db_connection)
         .await
         .unwrap();
+    println!("{:?}", db_results);
+
+    println!("Init update data");
+    let birthday = Birthday {
+        id_user: 1,
+        date_birthday: NaiveDate::parse_from_str("2011-01-01", "%Y-%m-%d").unwrap(),
+    };
+    let db_results = sqlx::query(
+        "UPDATE birthdays
+        SET date_birthday = $1
+        WHERE id_user = $2
+        RETURNING id_user, date_birthday",
+    )
+        .bind(birthday.date_birthday)
+        .bind(birthday.id_user)
+        .map(|row: PgRow| Birthday {
+            id_user: row.get("id_user"),
+            date_birthday: row.get("date_birthday"),
+        })
+        .fetch_one(&db_connection)
+        .await.unwrap();
     println!("{:?}", db_results);
 
     Ok(())
