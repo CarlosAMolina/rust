@@ -123,5 +123,33 @@ async fn main() -> Result<(), sqlx::Error> {
         .await.unwrap();
     println!("{:?}", db_results);
 
+    println!("Init update data");
+    let birthday = Birthday {
+        id_user: 1,
+        date_birthday: NaiveDate::parse_from_str("2011-01-01", "%Y-%m-%d").unwrap(),
+    };
+    let db_results = sqlx::query(
+        "UPDATE birthdays
+        SET date_birthday = $1
+        WHERE id_user = $2
+        RETURNING id_user, date_birthday",
+    )
+        .bind(birthday.date_birthday)
+        .bind(birthday.id_user)
+        .map(|row: PgRow| Birthday {
+            id_user: row.get("id_user"),
+            date_birthday: row.get("date_birthday"),
+        })
+        .fetch_one(&db_connection)
+        .await.unwrap();
+    println!("{:?}", db_results);
+
+    println!("Init delete data");
+    sqlx::query("DELETE FROM birthdays WHERE id_user = $1")
+        .bind(birthday.id_user)
+        .execute(&db_connection)
+        .await.unwrap();
+
+
     Ok(())
 }
