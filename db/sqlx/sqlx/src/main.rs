@@ -1,5 +1,6 @@
 use futures::TryStreamExt;
 use sqlx::postgres::PgPoolOptions;
+use sqlx::types::chrono::NaiveDate;
 use sqlx::Row;
 use std::io::{self, Write};
 use std::process::Command;
@@ -18,6 +19,12 @@ struct Config {
     database_password: String,
     database_port: u16,
     database_user: String,
+}
+
+// TODO #[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Birthday {
+    pub id_user: i32,
+    pub date_birthday: NaiveDate,
 }
 
 #[tokio::main]
@@ -67,6 +74,21 @@ async fn main() -> Result<(), sqlx::Error> {
         .connect(&db_url)
         .await?;
     sqlx::migrate!().run(&db_connection).await?;
+
+    println!("Init insert data");
+    let birthday = Birthday {
+        id_user: 1,
+        date_birthday: NaiveDate::parse_from_str("2015-09-05", "%Y-%m-%d").unwrap(),
+    };
+    sqlx::query(
+        "INSERT INTO birthdays (id_user, date_birthday)
+        VALUES ($1, $2)",
+    )
+    .bind(birthday.id_user)
+    .bind(birthday.date_birthday)
+    .execute(&db_connection)
+    .await
+    .unwrap();
 
     //// Fetch one.
     //let row: (i32, String, String) = sqlx::query_as("SELECT * from contacts.contacts.users")
