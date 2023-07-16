@@ -1,5 +1,5 @@
 use futures::TryStreamExt;
-use sqlx::postgres::PgPoolOptions;
+use sqlx::postgres::{PgPoolOptions, PgRow};
 use sqlx::types::chrono::NaiveDate;
 use sqlx::Row;
 use std::io::{self, Write};
@@ -22,6 +22,7 @@ struct Config {
 }
 
 // TODO #[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Debug)]
 pub struct Birthday {
     pub id_user: i32,
     pub date_birthday: NaiveDate,
@@ -90,20 +91,16 @@ async fn main() -> Result<(), sqlx::Error> {
     .await
     .unwrap();
 
-    //// Fetch one.
-    //let row: (i32, String, String) = sqlx::query_as("SELECT * from contacts.contacts.users")
-    //    .fetch_one(&pool)
-    //    .await?;
-    //println!("{:?}", row);
-    //// Fetch all rows.
-    //let mut rows = sqlx::query("SELECT * from contacts.contacts.users").fetch(&pool);
-    //while let Some(row) = rows.try_next().await? {
-    //    // map the row into a user-defined domain type
-    //    let id = row.try_get("id")?;
-    //    let name = row.try_get("name")?;
-    //    let surname = row.try_get("surname")?;
-    //    let user = User { id, name, surname };
-    //    println!("{:?}", user);
-    //}
+    println!("Init get data");
+    let db_results = sqlx::query("SELECT * from birthdays")
+        .map(|row: PgRow| Birthday {
+            id_user: row.get("id_user"),
+            date_birthday: row.get("date_birthday"),
+        })
+        .fetch_all(&db_connection)
+        .await
+        .unwrap();
+    println!("{:?}", db_results);
+
     Ok(())
 }
