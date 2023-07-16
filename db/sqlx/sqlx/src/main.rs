@@ -1,17 +1,10 @@
-use futures::TryStreamExt;
+use sqlx::Pool;
 use sqlx::postgres::{PgPoolOptions, PgRow};
 use sqlx::types::chrono::NaiveDate;
-use sqlx::Row;
+use sqlx::{Row, Postgres};
 use std::io::{self, Write};
 use std::process::Command;
-use tokio; // provides `try_next`
-
-#[derive(Debug)]
-struct User {
-    id: i32,
-    name: String,
-    surname: String,
-}
+use tokio;
 
 struct Config {
     database_host: String,
@@ -21,7 +14,6 @@ struct Config {
     database_user: String,
 }
 
-// TODO #[derive(Serialize, Deserialize, Debug, Clone)]
 #[derive(Debug)]
 pub struct Birthday {
     pub id_user: i32,
@@ -91,16 +83,7 @@ async fn main() -> Result<(), sqlx::Error> {
     .await
     .unwrap();
 
-    println!("Init get all data");
-    let db_results = sqlx::query("SELECT * from birthdays")
-        .map(|row: PgRow| Birthday {
-            id_user: row.get("id_user"),
-            date_birthday: row.get("date_birthday"),
-        })
-        .fetch_all(&db_connection)
-        .await
-        .unwrap();
-    println!("{:?}", db_results);
+    get_all_db_data(&db_connection).await;
 
     println!("Init update data");
     let birthday = Birthday {
@@ -150,6 +133,19 @@ async fn main() -> Result<(), sqlx::Error> {
         .execute(&db_connection)
         .await.unwrap();
 
-
+    get_all_db_data(&db_connection).await;
     Ok(())
+}
+
+async fn get_all_db_data(db_connection: &Pool<Postgres>) {
+    println!("Init get all data");
+    let db_results = sqlx::query("SELECT * from birthdays")
+        .map(|row: PgRow| Birthday {
+            id_user: row.get("id_user"),
+            date_birthday: row.get("date_birthday"),
+        })
+        .fetch_all(db_connection)
+        .await
+        .unwrap();
+    println!("{:?}", db_results);
 }
