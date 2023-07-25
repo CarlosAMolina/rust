@@ -23,17 +23,22 @@ enum Format {
 fn main() {
     let cli = Cli::parse();
 
-    let search_term = cli.search_term.as_ref().unwrap().join(" ");
-    println!("search term: {}", search_term);
-    println!("id: {:?}", cli.id);
-    println!("format: {:?}", cli.format);
-    match cli.format {
-        Some(Format::Long) => {
-            println!("Long format");
-        }
-        Some(Format::Short) => {
-            println!("Short format");
-        }
-        None => println!("Default value"),
+    let format;
+
+    if let Some(id) = cli.id {
+        println!("Init id: {}", id);
+        format = "long";
+    } else {
+        let search_term = cli.search_term.as_ref().unwrap().join(" ");
+        println!("Init search term {}", search_term);
+        format = match cli.format {
+            Some(Format::Long) => {
+                "long"
+            }
+            _ => {
+                "short"
+            }
+        };
     }
+    println!("Format: {}", format);
 }
