@@ -1,15 +1,10 @@
-## From Arch to Debian
+## Compile for Debian
 
-### Steps
+Seach in the makefiles of this project:
 
 ```bash
-docker pull rust
-docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp rust cargo build --release
+grep -rni debian | grep makefile
 ```
-
-### Resources
-
-<https://stackoverflow.com/questions/69010070/rust-linux-version-glibc-not-found-compile-for-different-glibc-libc6-version>
 
 ## From Ubuntu to Mac OS
 
