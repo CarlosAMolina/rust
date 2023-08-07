@@ -50,6 +50,10 @@ fn main() {
         answer = 42,
         summary = "info event, outside of any spans"
     );
+
+    // Function outside span.
+    my_function(1);
+
     // Construct a new span named "my span" with trace log level.
     // Equals as `let span = info_span!("my_span");`.
     // TODO despite using Level DEBUG or ERROR, all events are in my_span.
