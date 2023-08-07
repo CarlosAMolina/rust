@@ -1,4 +1,6 @@
 use tracing::{event, instrument, span, Level};
+use tracing_appender::rolling::{RollingFileAppender, Rotation};
+use tracing_subscriber::fmt::writer::MakeWriterExt;
 
 #[derive(Debug)]
 pub struct User {
@@ -7,11 +9,21 @@ pub struct User {
 }
 
 fn main() {
+    // Log all events to a rolling log file.
+    //let logfile = tracing_appender::rolling::hourly("/some/directory", "myapp-logs");
+    let logfile = RollingFileAppender::new(Rotation::HOURLY, "/tmp", "prefix.log");
+    // Log specified level and above to stdout.
+    let stdout = std::io::stdout.with_max_level(tracing::Level::DEBUG);
+
     // In order to record trace events, executables have to use a Subscriber implementation compatible with tracing. A Subscriber implements a way of collecting trace data, such as by logging it to standard output.
     // Any trace events generated outside the context of a subscriber will not be collected.
     // Install global collector configured based on RUST_LOG env var.
     // Using init() calls set_global_default() so this collector will be used as the default in all threads for the remainder of the duration of the program, similar to how loggers work in the log crate.
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt()
+    // Combine the stdout and log file `MakeWriter`s into one
+    // `MakeWriter` that writes to both
+    .with_writer(stdout.and(logfile))
+    .init();
 
     // this creates a new event, outside of any spans.
     tracing::info!(
