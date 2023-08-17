@@ -61,11 +61,30 @@ async fn main() -> Result<(), sqlx::Error> {
         .expect("sqlx command failed to start");
     io::stdout().write_all(&s.stderr).unwrap();
 
-    println!("Init create tables. URL: {}", db_url);
+
+    let db_url = format!(
+        "postgres://{}:{}@{}:{}",
+        config.database_user, config.database_password, config.database_host, config.database_port,
+    );
+
+    let postgres_connection = PgPoolOptions::new()
+        .max_connections(5)
+        .connect(&db_url)
+        .await?;
+    println!(
+        "Init create postgres connection. URL: {}",
+        db_url
+    );
+    if !exists_database(&config, &postgres_connection).await {
+        panic!("The database has not been created");
+    }
+
     let db_connection = PgPoolOptions::new()
         .max_connections(5)
         .connect(&db_url)
         .await?;
+
+    println!("Init create tables. URL: {}", db_url);
     sqlx::migrate!().run(&db_connection).await?;
 
     println!("Init insert data");
@@ -114,6 +133,26 @@ async fn main() -> Result<(), sqlx::Error> {
 
     get_all_db_data(&db_connection).await;
     Ok(())
+}
+
+async fn exists_database(config: &Config, connection: &Pool<Postgres>) -> bool {
+    println!(
+        "Init check database {} exists",
+        config.database_name
+    );
+    let database_names: Vec<_> = sqlx::query("SELECT datname FROM pg_database")
+        .map(|row: sqlx::postgres::PgRow| row.get::<String, _>("datname").to_string())
+        .fetch_all(connection)
+        .await
+        .unwrap();
+    println!("Current databases: {:?}", database_names);
+    if database_names.contains(&config.database_name) {
+        println!("The database {} exists", config.database_name);
+        true
+    } else {
+        println!("The database {} does not exist", config.database_name);
+        false
+    }
 }
 
 async fn get_all_db_data(db_connection: &Pool<Postgres>) {
