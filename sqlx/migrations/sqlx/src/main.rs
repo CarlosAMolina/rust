@@ -51,7 +51,7 @@ async fn main() -> Result<(), sqlx::Error> {
 
     if exists_database(&config, &postgres_connection).await {
         println!("Init delete database. URL: {}", db_url);
-        let s = Command::new("sqlx")
+        let command = Command::new("sqlx")
             .arg("database")
             .arg("drop")
             .arg("--database-url")
@@ -60,17 +60,23 @@ async fn main() -> Result<(), sqlx::Error> {
             // The output function will create the final command, which we can use to execute later.
             .output()
             .expect("sqlx command failed to start");
-        io::stdout().write_all(&s.stderr).unwrap();
+        if command.status.code().unwrap() != 0 {
+            panic!("Unsucessful command: {:?}", command);
+        }
+        io::stdout().write_all(&command.stderr).unwrap();
     }
     println!("Init create database. URL: {}", db_url);
-    let s = Command::new("sqlx")
+    let command = Command::new("sqlx")
         .arg("database")
         .arg("create")
         .arg("--database-url")
         .arg(&db_url)
         .output()
         .expect("sqlx command failed to start");
-    io::stdout().write_all(&s.stderr).unwrap();
+    if command.status.code().unwrap() != 0 {
+        panic!("Unsucessful command: {:?}", command);
+    }
+    io::stdout().write_all(&command.stdout).unwrap();
     if !exists_database(&config, &postgres_connection).await {
         panic!("The database has not been created");
     }
