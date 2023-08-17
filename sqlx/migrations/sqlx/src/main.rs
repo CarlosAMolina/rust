@@ -1,7 +1,7 @@
-use sqlx::Pool;
 use sqlx::postgres::{PgPoolOptions, PgRow};
 use sqlx::types::chrono::NaiveDate;
-use sqlx::{Row, Postgres};
+use sqlx::Pool;
+use sqlx::{Postgres, Row};
 use std::io::{self, Write};
 use std::process::Command;
 use tokio;
@@ -34,10 +34,7 @@ async fn main() -> Result<(), sqlx::Error> {
         "postgres://{}:{}@{}:{}",
         config.database_user, config.database_password, config.database_host, config.database_port,
     );
-    println!(
-        "Init create postgres connection. URL: {}",
-        postgres_url
-    );
+    println!("Init create postgres connection. URL: {}", postgres_url);
     let postgres_connection = PgPoolOptions::new()
         .max_connections(5)
         .connect(&postgres_url)
@@ -114,31 +111,30 @@ async fn main() -> Result<(), sqlx::Error> {
         WHERE id_user = $2
         RETURNING id_user, date_birthday",
     )
-        .bind(birthday.date_birthday)
-        .bind(birthday.id_user)
-        .map(|row: PgRow| Birthday {
-            id_user: row.get("id_user"),
-            date_birthday: row.get("date_birthday"),
-        })
-        .fetch_one(&db_connection)
-        .await.unwrap();
+    .bind(birthday.date_birthday)
+    .bind(birthday.id_user)
+    .map(|row: PgRow| Birthday {
+        id_user: row.get("id_user"),
+        date_birthday: row.get("date_birthday"),
+    })
+    .fetch_one(&db_connection)
+    .await
+    .unwrap();
     println!("{:?}", db_results);
 
     println!("Init delete data");
     sqlx::query("DELETE FROM birthdays WHERE id_user = $1")
         .bind(birthday.id_user)
         .execute(&db_connection)
-        .await.unwrap();
+        .await
+        .unwrap();
 
     get_all_db_data(&db_connection).await;
     Ok(())
 }
 
 async fn exists_database(config: &Config, connection: &Pool<Postgres>) -> bool {
-    println!(
-        "Init check database {} exists",
-        config.database_name
-    );
+    println!("Init check database {} exists", config.database_name);
     let database_names: Vec<_> = sqlx::query("SELECT datname FROM pg_database")
         .map(|row: sqlx::postgres::PgRow| row.get::<String, _>("datname").to_string())
         .fetch_all(connection)
