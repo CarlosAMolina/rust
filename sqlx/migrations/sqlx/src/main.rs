@@ -30,6 +30,19 @@ async fn main() -> Result<(), sqlx::Error> {
         database_user: "postgres".to_string(),
     };
 
+    let postgres_url = format!(
+        "postgres://{}:{}@{}:{}",
+        config.database_user, config.database_password, config.database_host, config.database_port,
+    );
+    println!(
+        "Init create postgres connection. URL: {}",
+        postgres_url
+    );
+    let postgres_connection = PgPoolOptions::new()
+        .max_connections(5)
+        .connect(&postgres_url)
+        .await?;
+
     let db_url = format!(
         "postgres://{}:{}@{}:{}/{}",
         config.database_user,
@@ -39,18 +52,19 @@ async fn main() -> Result<(), sqlx::Error> {
         config.database_name
     );
 
-    println!("Init delete database. URL: {}", db_url);
-    let s = Command::new("sqlx")
-        .arg("database")
-        .arg("drop")
-        .arg("--database-url")
-        .arg(&db_url)
-        .arg("-y")
-        // The output function will create the final command, which we can use to execute later.
-        .output()
-        .expect("sqlx command failed to start");
-    io::stdout().write_all(&s.stderr).unwrap();
-
+    if exists_database(&config, &postgres_connection).await {
+        println!("Init delete database. URL: {}", db_url);
+        let s = Command::new("sqlx")
+            .arg("database")
+            .arg("drop")
+            .arg("--database-url")
+            .arg(&db_url)
+            .arg("-y")
+            // The output function will create the final command, which we can use to execute later.
+            .output()
+            .expect("sqlx command failed to start");
+        io::stdout().write_all(&s.stderr).unwrap();
+    }
     println!("Init create database. URL: {}", db_url);
     let s = Command::new("sqlx")
         .arg("database")
@@ -60,21 +74,6 @@ async fn main() -> Result<(), sqlx::Error> {
         .output()
         .expect("sqlx command failed to start");
     io::stdout().write_all(&s.stderr).unwrap();
-
-
-    let db_url = format!(
-        "postgres://{}:{}@{}:{}",
-        config.database_user, config.database_password, config.database_host, config.database_port,
-    );
-
-    let postgres_connection = PgPoolOptions::new()
-        .max_connections(5)
-        .connect(&db_url)
-        .await?;
-    println!(
-        "Init create postgres connection. URL: {}",
-        db_url
-    );
     if !exists_database(&config, &postgres_connection).await {
         panic!("The database has not been created");
     }
