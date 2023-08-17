@@ -20,6 +20,13 @@ pub struct Birthday {
     pub date_birthday: NaiveDate,
 }
 
+#[derive(Debug)]
+pub struct BirthdayView {
+    pub id_user: i32,
+    pub date_birthday: NaiveDate,
+    pub foo: i32,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), sqlx::Error> {
     let config = Config {
@@ -86,7 +93,7 @@ async fn main() -> Result<(), sqlx::Error> {
         .connect(&db_url)
         .await?;
 
-    println!("Init create tables. URL: {}", db_url);
+    println!("Init migrations. URL: {}", db_url);
     sqlx::migrate!().run(&db_connection).await?;
 
     println!("Init insert data");
@@ -105,12 +112,14 @@ async fn main() -> Result<(), sqlx::Error> {
     .unwrap();
 
     get_all_db_data(&db_connection).await;
+    get_all_db_view_data(&db_connection).await;
 
     println!("Init update data");
     let birthday = Birthday {
         id_user: 1,
         date_birthday: NaiveDate::parse_from_str("2011-01-01", "%Y-%m-%d").unwrap(),
     };
+    println!("Init get table data");
     let db_results = sqlx::query(
         "UPDATE birthdays
         SET date_birthday = $1
@@ -162,6 +171,20 @@ async fn get_all_db_data(db_connection: &Pool<Postgres>) {
         .map(|row: PgRow| Birthday {
             id_user: row.get("id_user"),
             date_birthday: row.get("date_birthday"),
+        })
+        .fetch_all(db_connection)
+        .await
+        .unwrap();
+    println!("{:?}", db_results);
+}
+
+async fn get_all_db_view_data(db_connection: &Pool<Postgres>) {
+    println!("Init get all view data");
+    let db_results = sqlx::query("SELECT * from birthdays_view")
+        .map(|row: PgRow| BirthdayView {
+            id_user: row.get("id_user"),
+            date_birthday: row.get("date_birthday"),
+            foo: row.get("foo"),
         })
         .fetch_all(db_connection)
         .await

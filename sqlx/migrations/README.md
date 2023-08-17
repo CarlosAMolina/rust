@@ -25,7 +25,7 @@ cd sqlx
 sqlx migrate add -r birthdays
 ```
 
-Add in the `*_birthdays_table.up.sql` file the table definition:
+Add in the `*_birthdays.up.sql` file the table definition:
 
 ```bash
 CREATE TABLE IF NOT EXISTS birthdays (
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS birthdays (
 );
 ```
 
-Add in the *_birthdays_table.down.sql file:
+Add in the *_birthdays.down.sql file:
 
 ```bash
 DROP TABLE IF EXISTS birthdays;
