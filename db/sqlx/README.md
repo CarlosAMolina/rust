@@ -42,6 +42,16 @@ DROP TABLE IF EXISTS birthdays;
 
 ### Run migrations
 
+#### Run migrations automatically
+
+To run the `*.up.sql` files in the `migrations` folder, we modified the `main.rs` file to do it automatically:
+
+```rust
+sqlx::migrate!().run(&db_connection).await?;
+```
+
+#### Run migrations manually
+
 Although this project runs the `*.up.sql` migrations files, in this section we will see how to do it manually.
 
 Connect to the database and run migration:
@@ -65,3 +75,12 @@ make revert-migrations
 ## Resources
 
 <https://github.com/launchbadge/sqlx>
+
+Run migrations automatically with a `.rs` file:
+
+<https://docs.rs/sqlx/latest/sqlx/macro.migrate.html>
+
+More examples:
+
+<https://github.com/CarlosAMolina/rust-web-development-with-warp-tokio-and-reqwest>
+
