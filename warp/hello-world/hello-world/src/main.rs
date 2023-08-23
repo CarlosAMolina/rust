@@ -1,4 +1,4 @@
-use warp::{Filter, Reply};
+use warp::{http::StatusCode, Filter, Rejection, Reply};
 
 #[tokio::main]
 async fn main() {
@@ -20,7 +20,7 @@ async fn build_routes() -> impl Filter<Extract = (impl Reply,)> + Clone {
         .and(warp::header("user-agent"))
         .and(warp::path::end())
         .and_then(greet);
-    let routes = get_hello;
+    let routes = get_hello.recover(return_error);
     routes
 }
 
@@ -30,3 +30,19 @@ async fn greet(name: String, user_agent: String) -> Result<impl warp::Reply, war
     Ok(warp::reply::json(&response))
 }
 
+
+pub async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
+    if r.is_not_found() {
+        println!("Requested route was not found");
+        Ok(warp::reply::with_status(
+            "Requested route was not found",
+            StatusCode::NOT_FOUND,
+        ))
+    } else {
+        println!("Unknown error: {:?}", r);
+        Ok(warp::reply::with_status(
+            "Unknown error",
+            StatusCode::INTERNAL_SERVER_ERROR,
+        ))
+    }
+}
