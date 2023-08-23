@@ -17,15 +17,16 @@ async fn build_routes() -> impl Filter<Extract = (impl Reply,)> + Clone {
     let get_hello = warp::get()
         .and(warp::path("hello"))
         .and(warp::path::param::<String>())
+        .and(warp::header("user-agent"))
         .and(warp::path::end())
         .and_then(greet);
     let routes = get_hello;
     routes
 }
 
-async fn greet(name: String) -> Result<impl warp::Reply, warp::Rejection> {
-    println!("Params: name = {}", name);
-    let response = format!("Hello, {}!", name);
+async fn greet(name: String, user_agent: String) -> Result<impl warp::Reply, warp::Rejection> {
+    println!("Init greet");
+    let response = format!("Hello {}! User agent: {}", name, user_agent);
     Ok(warp::reply::json(&response))
 }
 
