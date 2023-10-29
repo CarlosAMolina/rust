@@ -1,0 +1,22 @@
+appenders:
+  stdout:
+    kind: console
+    filters:
+      - kind: threshold
+        level: info
+
+  logfile:
+    kind: file
+    path: "/tmp/foo.log"
+    encoder:
+      pattern: "{d} {l} {t} - {m}{n}"
+    filters:
+      - kind: threshold
+        level: trace
+
+root:
+  level: trace
+  appenders:
+    - stdout
+    - logfile
+
